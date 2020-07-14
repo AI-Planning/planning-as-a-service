@@ -44,9 +44,9 @@ Task changes should happen in [queue/tasks.py](celery-queue/tasks.py)
 
 ### Test
 
-[localhost:5001/solver/](localhost:5001/solver/) is my failed attempt to put things together.
+[localhost:5001/solver/](http://localhost:5001/solver/) is my failed attempt to put things together.
 
-to test things are working, see other APIs in app.py. For example: [localhost:5001/add/1/2](localhost:5001/add/1/2) will trigger a worker, and you can see the trace in the monitoring system (localhost:5555)[localhost:5555]
+to test things are working, see other APIs in app.py. For example: [localhost:5001/add/1/2](http://localhost:5001/add/1/2) will trigger a worker, and you can see the trace in the monitoring system [localhost:5555](http://localhost:5555)
 
 Need to figure out how to debug using docker images. The current requirements used are not compatible with python3.8.
 
