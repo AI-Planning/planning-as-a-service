@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>Ping!</title>
+    <!--Import Google Icon Font-->
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+    <!--Import materialize.css-->
+    <!-- Compiled and minified CSS -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/css/materialize.min.css">
+
+    <!--Let browser know website is optimized for mobile-->
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>   
+  </head>
+  
+  <body>
+    <div class="navbar-fixed">
+      <nav class="teal">
+        <div class="nav-wrapper">
+          <a href="#!" class="brand-logo center">Ping!</a>
+        </div>
+      </nav>
+    </div>
+
+    <div class="container">
+      <div class="row">
+        <h3>Call a Planning Solver Test!</h3>
+        
+        {% for message in get_flashed_messages() %}
+          <p style="color: red;">{{ message }}</p>
+        {% endfor %}
+      </div>
+
+      <div class="row">
+        <form action = "/solver" class="col s12" method="POST" enctype="multipart/form-data">
+          <!-- Full names -->
+          <div class="row">
+            <div class="input-field col s6">
+              <input type="file" name="domain-file" id="domain-file" />
+              <label for="domain">Domain</label>
+            </div>
+            <div class="input-field col s6">
+              <input type="file" name="problem-file"  id="problem-file" />
+              <label for="problem-file">Problem</label>
+            </div>
+          </div>
+          
+          <button class="btn waves-effect waves-light" type="submit" name="action">Submit
+            <i class="material-icons right">send</i>
+          </button>  
+
+        </form>
+      </div>
+
+    </div>
+
+    <!--JavaScript at end of body for optimized loading-->
+    <!-- Compiled and minified JavaScript -->
+    <script type="text/javascript">
+      // initialize the select dropdown
+      document.addEventListener('DOMContentLoaded', function() {
+        var elems = document.querySelectorAll('select');
+        var instances = M.FormSelect.init(elems);
+      });       
+    </script>    
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/js/materialize.min.js"></script>
+  </body>
+</html>
