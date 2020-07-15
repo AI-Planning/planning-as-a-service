@@ -95,7 +95,7 @@ code . &
 ```
 
 Go to the debug symbol add breakpoints and debug as shown below:
-![image](/docs/videos/debug.gif)
+![image](https://github.com/AI-Planning/planning-as-a-service/blob/master/docs/videos/debug.gif)
 
 ## Planutils (NOT WORKING)
 planutils fails to setup in a python virtual environment:
