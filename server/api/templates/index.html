@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html>
   <head>
-    <title>Ping!</title>
+    <title>Solver API</title>
     <!--Import Google Icon Font-->
     <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
     <!--Import materialize.css-->
@@ -16,14 +16,14 @@
     <div class="navbar-fixed">
       <nav class="teal">
         <div class="nav-wrapper">
-          <a href="#!" class="brand-logo center">Ping!</a>
+          <a href="#!" class="brand-logo center">Solver API!</a>
         </div>
       </nav>
     </div>
 
     <div class="container">
       <div class="row">
-        <h3>Call a Planning Solver Test!</h3>
+        <h3>Call a Planning Solver:</h3>
         
         {% for message in get_flashed_messages() %}
           <p style="color: red;">{{ message }}</p>
@@ -34,13 +34,17 @@
         <form action = "/solver" class="col s12" method="POST" enctype="multipart/form-data">
           <!-- Full names -->
           <div class="row">
-            <div class="input-field col s6">
-              <input type="file" name="domain-file" id="domain-file" />
-              <label for="domain">Domain</label>
+            <div class="input-field col s2 row s12">
+              <label for="domain">Domain</label>              
             </div>
-            <div class="input-field col s6">
-              <input type="file" name="problem-file"  id="problem-file" />
+            <div class="input-field col s2">
+              <input type="file" name="domain-file" id="domain-file" />                            
+            </div>
+            <div class="input-field col s2 row s12">
               <label for="problem-file">Problem</label>
+            </div>
+            <div class="input-field col s3">
+              <input type="file" name="problem-file"  id="problem-file" />
             </div>
           </div>
           
