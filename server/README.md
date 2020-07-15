@@ -1,21 +1,15 @@
-# Docker Flask Celery Redis
+# Docker Build & Launch
 
-A basic [Docker Compose](https://docs.docker.com/compose/) template for orchestrating a [Flask](http://flask.pocoo.org/) application & a [Celery](http://www.celeryproject.org/) queue with [Redis](https://redis.io/)
-
----
-
-adapted from [https://github.com/mattkohl/docker-flask-celery-redis](https://github.com/mattkohl/docker-flask-celery-redis)
-
-## Get sources
-
+Get sources
+ 
 ```bash
 git clone https://github.com/AI-Planning/planning-as-a-service
+cd plannin-as-a-service/server
 ```
 
-## Docker Build & Launch
+Start Docker:
 
 ```bash
-cd plannin-as-a-service/server
 docker-compose up -d --build
 ```
 
@@ -44,8 +38,8 @@ Task changes should happen in [queue/tasks.py](celery-queue/tasks.py)
 
 # API
 
-- Planning solver: [localhost:5001/solver/](localhost:5001/solver/) 
-- Queue Monitor: [localhost:5555](localhost:5555)
+- Planning solver: [localhost:5001/solver/](http://localhost:5001/solver/) 
+- Queue Monitor: [localhost:5555](http://localhost:5555)
 
 # Local Dev
 
@@ -82,8 +76,6 @@ New Terminal and start flower (queue monitoring)
 source env/bin/activate
 flower -A tasks --port=5555 --broker=redis://localhost:6379/0
 ```
-
-
 
 ## Debug
 
@@ -153,5 +145,11 @@ Current thread 0x00007fc2b0788740 (most recent call first):
 Error installing downward. Rolling back changes...
 rm: cannot remove 'downward.sif': No such file or directory
 ```
+# Docker Flask Celery Redis
 
+A basic [Docker Compose](https://docs.docker.com/compose/) template for orchestrating a [Flask](http://flask.pocoo.org/) application & a [Celery](http://www.celeryproject.org/) queue with [Redis](https://redis.io/)
+
+---
+
+Docker structure adapted from [https://github.com/mattkohl/docker-flask-celery-redis](https://github.com/mattkohl/docker-flask-celery-redis)
 
