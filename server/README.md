@@ -49,6 +49,8 @@ Task changes should happen in [queue/tasks.py](celery-queue/tasks.py)
 
 # Local Dev
 
+
+
 ```
 pip install -r requirements.txt
 sudo apt-get install redis-server
