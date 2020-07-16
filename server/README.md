@@ -4,7 +4,7 @@ Get sources
  
 ```bash
 git clone https://github.com/AI-Planning/planning-as-a-service
-cd plannin-as-a-service/server
+cd planning-as-a-service/server
 ```
 
 Start Docker:
