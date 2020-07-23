@@ -1,7 +1,9 @@
-# Docker Build & Launch
+# Ways to Run & Debug Server
+
+## Docker Build & Launch
 
 Get sources
- 
+
 ```bash
 git clone https://github.com/AI-Planning/planning-as-a-service
 cd planning-as-a-service/server
@@ -13,7 +15,7 @@ Start Docker:
 docker-compose up -d --build
 ```
 
-or 
+or
 
 ```bash
 make build-start
@@ -22,6 +24,7 @@ make build-start
 This will expose the Flask application's endpoints on port `5001` as well as a [Flower](https://github.com/mher/flower) server for monitoring workers on port `5555`
 
 To add more workers:
+
 ```bash
 docker-compose up -d --scale worker=5 --no-recreate
 ```
@@ -34,54 +37,57 @@ docker-compose down
 
 To change the endpoints, update the code in [api/app.py](api/app.py)
 
-Task changes should happen in [queue/tasks.py](celery-queue/tasks.py) 
+Task changes should happen in [queue/tasks.py](celery-queue/tasks.py)
 
-# API
+## API
 
-- Planning solver: [localhost:5001/solver/](http://localhost:5001/solver/) 
+- Planning solver: [localhost:5001/solver/](http://localhost:5001/solver/)
 - Queue Monitor: [localhost:5555](http://localhost:5555)
 
-# Local Dev
+## Local Dev
 
+Assuming you are in the `server/` directory.
 
-
-```
-pip install -r requirements.txt
+```bash
 sudo apt-get install redis-server
 sudo service redis-server start
+virtualenv env
+pip install -r requirements.txt
 ```
 
-## Run server
-
+### Run server
 
 New terminal (If you are using vscode, do ```CTRL+SHIFT+` ``` to open a new terminal)
 
 Run Flask:
-```
+
+```bash
 source env/bin/activate
 cd api
 python app.py
 ```
 
-New terminal and start celery
-```
+New terminal and start celery:
+
+```bash
 source env/bin/activate
 cd celery-queue
 celery -A tasks worker --loglevel=info
 ```
 
-New Terminal and start flower (queue monitoring)
+New Terminal and start flower (queue monitoring):
 
-```
+```bash
 source env/bin/activate
+cd celery-queue
 flower -A tasks --port=5555 --broker=redis://localhost:6379/0
 ```
 
-## Debug
+### Debug
 
-Go to `server` folder and open `vscode`. Install vscode first.
+Go to `server` folder and open `vscode`. Install vscode first. Note that this assumes you have started celery and flower as instructed above.
 
-```
+```bash
 cd server
 code . &
 ```
@@ -89,18 +95,19 @@ code . &
 Go to the debug symbol add breakpoints and debug as shown below:
 ![image](https://github.com/AI-Planning/planning-as-a-service/blob/master/docs/videos/debug.gif)
 
-## Planutils (NOT WORKING)
+### Planutils (NOT WORKING)
+
 planutils fails to setup in a python virtual environment:
 
-```
+```bash
 sudo apt install singularity
 planutils setup
 planutils install lama
 ```
 
-Yoy get
+You get
 
-```
+```bash
  planutils install lama
 
 About to install the following packages: downward (36M), lama (20K)
@@ -121,7 +128,7 @@ Error installing downward. Rolling back changes...
 
 If you remove the --name from ```env/lib/plauntils/packages/downward/install``` the installation proceeds but fails after few seconds:
 
-```
+```bash
 $ planutils install lama
 
 About to install the following packages: downward (36M), lama (20K)
@@ -145,11 +152,11 @@ Current thread 0x00007fc2b0788740 (most recent call first):
 Error installing downward. Rolling back changes...
 rm: cannot remove 'downward.sif': No such file or directory
 ```
-# Docker Flask Celery Redis
+
+## Docker Flask Celery Redis
 
 A basic [Docker Compose](https://docs.docker.com/compose/) template for orchestrating a [Flask](http://flask.pocoo.org/) application & a [Celery](http://www.celeryproject.org/) queue with [Redis](https://redis.io/)
 
 ---
 
 Docker structure adapted from [https://github.com/mattkohl/docker-flask-celery-redis](https://github.com/mattkohl/docker-flask-celery-redis)
-
