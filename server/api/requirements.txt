@@ -13,7 +13,6 @@ itsdangerous==1.1.0
 Jinja2==2.11.2
 kombu==4.6.11
 MarkupSafe==1.1.1
-planutils==0.2.2
 prometheus-client==0.8.0
 pytz==2020.1
 redis==3.5.3
