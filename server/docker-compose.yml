@@ -1,6 +1,7 @@
 version: "3"
 services:
   web:
+    privileged: true
     build:
       context: ./api
       dockerfile: Dockerfile
@@ -10,6 +11,7 @@ services:
     depends_on:
       - redis
   worker:
+    privileged: true
     build:
       context: celery-queue
       dockerfile: Dockerfile
