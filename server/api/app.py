@@ -64,7 +64,7 @@ def index():
             task = celery.send_task('tasks.solve', args=[domain_url, problem_url, solver], kwargs={})
             flash( Markup(f"Sovling domain <a href='{domain_url}'> uploaded_domain </a> and <a href='{problem_url}'> uploaded_problem </a>: Task ID: {task.id} - <a href='{url_for('check_task', task_id=task.id, external=True)}'>check status of {task.id} </a>"))
 
-        # remove the tmp/fies
+        # remove the tmp/files
         # This may fail if celery tasks have not finished. May happen while debugging, or in deployed version.
         # TODO: Find out if there's an async way of removing files once celery tasks have finished
         #       Something similar to what's there in function `check_task` below
