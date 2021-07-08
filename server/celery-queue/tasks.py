@@ -43,7 +43,7 @@ def solve(domain_url: str, problem_url: str, solver: str) -> str:
     os.remove( problem_file )
     shutil.rmtree(tmpfolder)
 
-    return {'stdout': res.stdout, 'stderr': res.stderr}    
+    return {'stdout': res.stdout, 'stderr': res.stderr}
 
 @celery.task(name='tasks.add')
 def add(x: int, y: int) -> int:

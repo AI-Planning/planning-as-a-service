@@ -7,7 +7,6 @@ ENV C_FORCE_ROOT true
 ENV HOST 0.0.0.0
 ENV PORT 5001
 ENV DEBUG true
-ENV PATH ~/.planutils/bin:$PATH
 
 COPY . /api
 WORKDIR /api

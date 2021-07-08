@@ -11,8 +11,6 @@ ENV PATH=$PATH:~/.planutils/bin
 COPY . /queue
 WORKDIR /queue
 
-# Grabbing downward and lama
-RUN planutils install -f downward
 RUN planutils install -f lama
 
 RUN pip install -r requirements.txt
