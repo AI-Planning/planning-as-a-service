@@ -1,4 +1,5 @@
 import os
+import shutil
 import time
 import tempfile
 import requests
@@ -40,9 +41,9 @@ def solve(domain_url: str, problem_url: str, solver: str) -> str:
     # remove the tmp/fies once we finish
     os.remove( domain_file )
     os.remove( problem_file )
-    os.rmdir(tmpfolder)
+    shutil.rmtree(tmpfolder)
 
-    return {'stdout': res.stdout, 'stderr': res.stderr}
+    return {'stdout': res.stdout, 'stderr': res.stderr}    
 
 @celery.task(name='tasks.add')
 def add(x: int, y: int) -> int:
