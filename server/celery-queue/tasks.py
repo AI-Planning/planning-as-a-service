@@ -41,9 +41,18 @@ def solve(domain_url: str, problem_url: str, solver: str) -> str:
     # remove the tmp/fies once we finish
     os.remove( domain_file )
     os.remove( problem_file )
+    files = os.listdir(tmpfolder)
+
+    plans = {}
+
+    for file in files:
+        fpath = f'{tmpfolder}/{file}'
+        f = open(fpath, "r")
+        plans[file] = f.readlines()
+
     shutil.rmtree(tmpfolder)
 
-    return {'stdout': res.stdout, 'stderr': res.stderr}
+    return {'stdout': res.stdout, 'stderr': res.stderr, 'plans':plans}
 
 @celery.task(name='tasks.add')
 def add(x: int, y: int) -> int:
