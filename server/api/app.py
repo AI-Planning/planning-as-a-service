@@ -1,7 +1,8 @@
 import os
+import tempfile
 from flask import Flask
 from flask import url_for
-from flask import flash, Markup, render_template, request, redirect, send_file
+from flask import flash, Markup, render_template, request, redirect, send_file, make_response, jsonify
 from flask_uploads  import (UploadSet, configure_uploads, IMAGES,
                               UploadNotAllowed)
 
@@ -9,6 +10,7 @@ from werkzeug.utils import secure_filename
 
 from base64 import b64encode
 
+from planutils.package_installation import PACKAGES
 
 from worker import celery
 import celery.states as states
@@ -59,12 +61,11 @@ def index():
         problem_url = pddl_files.url(filename_problem)
 
         # Test to call celery with a couple of solvers
-
+            #  Want to provide the name associated with the manifest
         solvers = {"lama-first"}
         for solver in solvers:
             task = celery.send_task('tasks.solve', args=[domain_url, problem_url, solver], kwargs={})
             flash( Markup(f"Solving domain <a href='{domain_url}'> uploaded_domain </a> and <a href='{problem_url}'> uploaded_problem </a>: Task ID: {task.id} - <a href='{url_for('check_task', task_id=task.id, external=True)}'>check status of {task.id} </a>"))
-
         # remove the tmp/files
         # This may fail if celery tasks have not finished. May happen while debugging, or in deployed version.
         # TODO: Find out if there's an async way of removing files once celery tasks have finished
@@ -73,12 +74,24 @@ def index():
         # os.remove( pddl_files.path(filename_problem) )
 
         return redirect(url_for('index'))
+    
+@app.route('/package/<package>', methods=['POST'])
+def runPackage(package):
+    # Grabs the request data
+    request_data = request.get_json()
+
+    domain = request_data['domain']
+    problem = request_data['problem']
+
+    task = celery.send_task('tasks.solve.string', args=[domain, problem, package], kwargs={})
+
+    return jsonify({"result":str(url_for('check_task', task_id=task.id, external=True))})
 
 @app.route('/check/<string:task_id>')
 def check_task(task_id: str) -> str:
     res = celery.AsyncResult(task_id)
     if res.state == states.PENDING:
-        return res.state
+        return res.state 
     else:
         return str(res.result)
 
