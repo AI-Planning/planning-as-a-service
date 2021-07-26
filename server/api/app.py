@@ -75,17 +75,59 @@ def index():
 
         return redirect(url_for('index'))
     
-@app.route('/package/<package>', methods=['POST'])
-def runPackage(package):
-    # Grabs the request data
-    request_data = request.get_json()
+@app.route('/package/<package>/<service>', methods=['GET', 'POST'])
+def runPackage(package, service):
+    # Get request
+    if request.method == 'GET':
+        # This is where we will send the user to the API documentation
+        return jsonify({PACKAGES[package]})
+    
+    # Post request
+    elif request.method == 'POST':
+        # Called route with a package that isn't in Planutils
+        if package not in PACKAGES:
+            return make_response("That package does not exist.", 400)
+        
+        if service not in PACKAGES[package]['endpoint']['services']:
+            return make_response("That package does not offer service: " + service, 400)
+        
+        # Grabs the request data (JSON)
+        request_data = request.get_json()
+        # Contains manifest information
+        package_manifest = PACKAGES[package]['endpoint']
+        
+        # If its a generic solver, we can make assumptions
+        if service == 'solve' and package_manifest['type'] == 'solver':
+            domain = request_data['domain']
+            problem = request_data['problem']
+            task = celery.send_task('tasks.solve.string', args=[domain, problem, package], kwargs={})
+        else:
+            # Global package arguments
+            arguments = {}
+            for arg in package_manifest['args']:
+                name = arg['name']
+                arguments[name] = {"value":request_data[name], "type":arg['type']}
+            
+            # Service specific arguments
+            if "args" in package_manifest['services'][service]:
+                # We have extra args
+                for arg in package_manifest['services'][service]['args']:
+                    name = arg['name']
+                    arguments[name] = {"value":request_data[name], "type":arg['type']}
+            
+            # Arguments now contains {arg -> value} for each argument that is needed for the service
+            
+            call = package_manifest['services'][service]['call']
+            output_files = package_manifest['services'][service]['return']['file']
+            # Send task
+            task = celery.send_task('tasks.run.package', args=[package, arguments, call, [output_files]], kwargs={})
+            
+        return jsonify({"result":str(url_for('check_task', task_id=task.id, external=True))})
 
-    domain = request_data['domain']
-    problem = request_data['problem']
-
-    task = celery.send_task('tasks.solve.string', args=[domain, problem, package], kwargs={})
-
-    return jsonify({"result":str(url_for('check_task', task_id=task.id, external=True))})
+@app.route('/docs/<package>', methods=['GET'])
+def get_documentation(package):
+    # Just return the manifest for now
+    return {PACKAGES[package]}
 
 @app.route('/check/<string:task_id>')
 def check_task(task_id: str) -> str:
@@ -93,7 +135,7 @@ def check_task(task_id: str) -> str:
     if res.state == states.PENDING:
         return res.state 
     else:
-        return str(res.result)
+        return {"result":res.result}
 
 
 if __name__ == "__main__":
