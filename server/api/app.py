@@ -118,9 +118,9 @@ def runPackage(package, service):
             # Arguments now contains {arg -> value} for each argument that is needed for the service
             
             call = package_manifest['services'][service]['call']
-            output_files = package_manifest['services'][service]['return']['file']
+            output_file = package_manifest['services'][service]['return']
             # Send task
-            task = celery.send_task('tasks.run.package', args=[package, arguments, call, [output_files]], kwargs={})
+            task = celery.send_task('tasks.run.package', args=[package, arguments, call, output_file], kwargs={})
             
         return jsonify({"result":str(url_for('check_task', task_id=task.id, external=True))})
 

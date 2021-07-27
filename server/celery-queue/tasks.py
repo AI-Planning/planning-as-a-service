@@ -4,6 +4,7 @@ import time
 import tempfile
 import requests
 import subprocess
+import json
 
 from celery import Celery
 from planutils.package_installation import PACKAGES
@@ -20,14 +21,18 @@ def download_file( url: str, dst: str):
     with open(dst, 'wb') as f:
         f.write(r.content)
         
-def retrieve_output_files(target_files: [str], folder):
+def retrieve_output_file(target_file:str, folder):
     available_files = os.listdir(folder)
     output = {}
     for file in available_files:
-        if file in target_files:
+        if file == target_file['file']:
             fpath = f'{folder}/{file}'
             f = open(fpath, "r")
-            output[file] = f.readlines()
+            if target_file['type'] == 'json':
+                output[file] = json.loads(f.read())
+            else:
+                output[file] = f.read()
+            break
     return output
 
 def write_to_temp_file(name:str, data:str, folder:str):
@@ -35,6 +40,7 @@ def write_to_temp_file(name:str, data:str, folder:str):
     file = open(path, "w")
     file.write(data)
     file.close()
+    return path
 
 # Solve using downloaded flask files - not strings
 @celery.task(name='tasks.solve')
@@ -69,24 +75,28 @@ def solve(domain_url: str, problem_url: str, solver: str) -> str:
 
 # Running generic planutils packages with no solver-specific assumptions
 @celery.task(name='tasks.run.package')
-def run_package(package: str, arguments:dict, call, output_files:[str]):
-    # Write all file type arguments to a created temp folder in which we can run the service
-    # Call should remain unchanged, and we should write files with the same names as the call string has - 
-        # Leave it up to the manifest to make sure that they match
+def run_package(package: str, arguments:dict, call:str, output_file:str):
     tmpfolder = tempfile.mkdtemp()
+    
     # Write files 
-    for name, value in arguments.items():
-        if value['type'] == 'file':
+    for k, v in arguments.items():
+        if v['type'] == 'file':
             # Need to write to a temp file
-            write_to_temp_file(name, value['value'], tmpfolder)
+            path_to_file = write_to_temp_file(k, v['value'], tmpfolder)
+            # k is a file, we want to replace with the file path
+            call = call.replace("{%s}" % k, k)
+        else:
+            # k needs to be replaced with the value 
+            call = call.replace("{%s}" % k, str(v['value']))
+
     # Run the command
     res = subprocess.run(call, stdout=subprocess.PIPE, stderr=subprocess.PIPE,
                         executable='/bin/bash', encoding='utf-8',
                         shell=True, cwd=tmpfolder)
     
-    output = retrieve_output_files(output_files, tmpfolder)
-    
-    return {"Stdout":res.stdout, "Stderr":res.stderr, "Result":output}
+    output = retrieve_output_file(output_file, tmpfolder)
+
+    return {"Stdout":res.stdout, "Stderr":res.stderr, "call":call, "output":output}
     
     
         
@@ -96,8 +106,8 @@ def solve(domain: str, problem: str, solver: str) -> str:
     
     tmpfolder = tempfile.mkdtemp()
 
-    write_to_temp_file("domain.pddl", domain, tmpfolder)
-    write_to_temp_file("problem.pddl", problem, tmpfolder)
+    domain_path = write_to_temp_file("domain.pddl", domain, tmpfolder)
+    problem_path = write_to_temp_file("problem.pddl", problem, tmpfolder)
 
     command = f"{solver} {domain_path} {problem_path}"
     res = subprocess.run(command, stdout=subprocess.PIPE, stderr=subprocess.PIPE,
