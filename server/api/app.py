@@ -127,7 +127,10 @@ def runPackage(package, service):
 @app.route('/docs/<package>', methods=['GET'])
 def get_documentation(package):
     # Just return the manifest for now
-    return {PACKAGES[package]}
+    if package in PACKAGES:
+        return render_template('documentation.html', package_information=PACKAGES[package])
+    else:
+        return render_template('documentation.html', package_information='No package with that name.')
 
 @app.route('/check/<string:task_id>')
 def check_task(task_id: str) -> str:
@@ -136,7 +139,6 @@ def check_task(task_id: str) -> str:
         return res.state 
     else:
         return {"result":res.result}
-
 
 if __name__ == "__main__":
 

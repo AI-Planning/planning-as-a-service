@@ -67,18 +67,17 @@ def solve(domain_url: str, problem_url: str, solver: str) -> str:
     os.remove(domain_file)
     os.remove(problem_file)
     
-    plans = retrieve_output_files(PACKAGES[solver]['endpoint']['return']['file'], tmpfolder)
+    plan = retrieve_output_file(PACKAGES[solver]['endpoint']['return']['file'], tmpfolder)
     
     shutil.rmtree(tmpfolder)
 
-    return {'stdout': res.stdout, 'stderr': res.stderr, 'plans':plans}
+    return {'stdout': res.stdout, 'stderr': res.stderr, 'plan':plan}
 
 # Running generic planutils packages with no solver-specific assumptions
 @celery.task(name='tasks.run.package')
 def run_package(package: str, arguments:dict, call:str, output_file:str):
     tmpfolder = tempfile.mkdtemp()
-    
-    # Write files 
+    # Write files and replace args in the call string
     for k, v in arguments.items():
         if v['type'] == 'file':
             # Need to write to a temp file
@@ -96,11 +95,9 @@ def run_package(package: str, arguments:dict, call:str, output_file:str):
     
     output = retrieve_output_file(output_file, tmpfolder)
 
-    return {"Stdout":res.stdout, "Stderr":res.stderr, "call":call, "output":output}
+    return {"stdout":res.stdout, "stderr":res.stderr, "call":call, "output":output}
     
-    
-        
-
+# Running a generic solver with string PDDL inputs 
 @celery.task(name='tasks.solve.string')
 def solve(domain: str, problem: str, solver: str) -> str:
     
@@ -110,6 +107,7 @@ def solve(domain: str, problem: str, solver: str) -> str:
     problem_path = write_to_temp_file("problem.pddl", problem, tmpfolder)
 
     command = f"{solver} {domain_path} {problem_path}"
+    
     res = subprocess.run(command, stdout=subprocess.PIPE, stderr=subprocess.PIPE,
                         executable='/bin/bash', encoding='utf-8',
                         shell=True, cwd=tmpfolder)
@@ -117,7 +115,7 @@ def solve(domain: str, problem: str, solver: str) -> str:
     # # remove the tmp/fies once we finish
     os.remove(domain_path)
     os.remove(problem_path)
-    plans = retrieve_output_files(PACKAGES[solver]['endpoint']['return']['file'], tmpfolder)
+    plan = retrieve_output_file(PACKAGES[solver]['endpoint']['return']['file'], tmpfolder)
     shutil.rmtree(tmpfolder)
 
-    return {'stdout': res.stdout, 'stderr': res.stderr, 'plans':plans}
+    return {'stdout': res.stdout, 'stderr': res.stderr, 'plans':plan}
