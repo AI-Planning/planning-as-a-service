@@ -22,24 +22,16 @@ def download_file( url: str, dst: str):
         f.write(r.content)
         
 def retrieve_output_file(target_file:str, folder):
-    available_files = os.listdir(folder)
-    output = {}
-    for file in available_files:
-        if file == target_file['file']:
-            fpath = f'{folder}/{file}'
-            f = open(fpath, "r")
-            if target_file['type'] == 'json':
-                output[file] = json.loads(f.read())
-            else:
-                output[file] = f.read()
-            break
+    with open(os.path.join(folder, target_file['file']), 'r') as f:
+        output = f.read()
+        if target_file['type'] == 'json':
+            output = json.loads(output)
     return output
 
 def write_to_temp_file(name:str, data:str, folder:str):
     path = os.path.join(folder, name)
-    file = open(path, "w")
-    file.write(data)
-    file.close()
+    with open(path, 'w') as f:
+        f.write(data)
     return path
 
 # Solve using downloaded flask files - not strings
@@ -96,26 +88,3 @@ def run_package(package: str, arguments:dict, call:str, output_file:str):
     output = retrieve_output_file(output_file, tmpfolder)
 
     return {"stdout":res.stdout, "stderr":res.stderr, "call":call, "output":output}
-    
-# Running a generic solver with string PDDL inputs 
-@celery.task(name='tasks.solve.string')
-def solve(domain: str, problem: str, solver: str) -> str:
-    
-    tmpfolder = tempfile.mkdtemp()
-
-    domain_path = write_to_temp_file("domain.pddl", domain, tmpfolder)
-    problem_path = write_to_temp_file("problem.pddl", problem, tmpfolder)
-
-    command = f"{solver} {domain_path} {problem_path}"
-    
-    res = subprocess.run(command, stdout=subprocess.PIPE, stderr=subprocess.PIPE,
-                        executable='/bin/bash', encoding='utf-8',
-                        shell=True, cwd=tmpfolder)
-
-    # # remove the tmp/fies once we finish
-    os.remove(domain_path)
-    os.remove(problem_path)
-    plan = retrieve_output_file(PACKAGES[solver]['endpoint']['return']['file'], tmpfolder)
-    shutil.rmtree(tmpfolder)
-
-    return {'stdout': res.stdout, 'stderr': res.stderr, 'plans':plan}

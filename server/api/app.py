@@ -2,7 +2,7 @@ import os
 import tempfile
 from flask import Flask
 from flask import url_for
-from flask import flash, Markup, render_template, request, redirect, send_file, make_response, jsonify
+from flask import flash, Markup, render_template, request, redirect, send_file, make_response, jsonify, json
 from flask_uploads  import (UploadSet, configure_uploads, IMAGES,
                               UploadNotAllowed)
 
@@ -61,18 +61,13 @@ def index():
         problem_url = pddl_files.url(filename_problem)
 
         # Test to call celery with a couple of solvers
-            #  Want to provide the name associated with the manifest
         solvers = {"lama-first"}
         for solver in solvers:
             task = celery.send_task('tasks.solve', args=[domain_url, problem_url, solver], kwargs={})
             flash( Markup(f"Solving domain <a href='{domain_url}'> uploaded_domain </a> and <a href='{problem_url}'> uploaded_problem </a>: Task ID: {task.id} - <a href='{url_for('check_task', task_id=task.id, external=True)}'>check status of {task.id} </a>"))
         # remove the tmp/files
         # This may fail if celery tasks have not finished. May happen while debugging, or in deployed version.
-        # TODO: Find out if there's an async way of removing files once celery tasks have finished
-        #       Something similar to what's there in function `check_task` below
-        # os.remove( pddl_files.path(filename_domain) )
-        # os.remove( pddl_files.path(filename_problem) )
-
+        
         return redirect(url_for('index'))
     
 @app.route('/package/<package>/<service>', methods=['GET', 'POST'])
@@ -80,16 +75,22 @@ def runPackage(package, service):
     # Get request
     if request.method == 'GET':
         # This is where we will send the user to the API documentation
-        return jsonify({PACKAGES[package]})
+        if package not in PACKAGES:
+            return make_response("That package does not exist.", 400)
+        else:
+            return jsonify(PACKAGES[package])
     
     # Post request
     elif request.method == 'POST':
         # Called route with a package that isn't in Planutils
         if package not in PACKAGES:
-            return make_response("That package does not exist.", 400)
+            return jsonify({"Error":"That package does not exist"})
         
         if service not in PACKAGES[package]['endpoint']['services']:
-            return make_response("That package does not offer service: " + service, 400)
+            return jsonify({"Error":"That package does not contain service " + service})
+        
+        if 'endpoint' not in PACKAGES[package]:
+            return jsonify({"Error":"That package does not contain an API endpoint"})
         
         # Grabs the request data (JSON)
         request_data = request.get_json()
@@ -98,37 +99,31 @@ def runPackage(package, service):
         
         # If its a generic solver, we can make assumptions
         if service == 'solve' and package_manifest['type'] == 'solver':
-            domain = request_data['domain']
-            problem = request_data['problem']
-            task = celery.send_task('tasks.solve.string', args=[domain, problem, package], kwargs={})
+            if 'domain' not in request_data:
+                return jsonify({"Error":"Missing required argument: domain"})
+            if 'problem' not in request_data:
+                return jsonify({"Error":"Missing required argument: problem"})
+            
+            arguments = {'domain':{"value":request_data['domain'], "type":"file"}, 'problem':{"value":request_data['problem'], "type":"file"}}
         else:
-            # Global package arguments
-            arguments = {}
-            for arg in package_manifest['args']:
-                name = arg['name']
-                arguments[name] = {"value":request_data[name], "type":arg['type']}
+            # Get all necessary arguments for the service from request_data
+            arguments = get_arguments(package, service, request_data, package_manifest)
+            if 'Error' in arguments:
+                return arguments
             
-            # Service specific arguments
-            if "args" in package_manifest['services'][service]:
-                # We have extra args
-                for arg in package_manifest['services'][service]['args']:
-                    name = arg['name']
-                    arguments[name] = {"value":request_data[name], "type":arg['type']}
-            
-            # Arguments now contains {arg -> value} for each argument that is needed for the service
-            
-            call = package_manifest['services'][service]['call']
-            output_file = package_manifest['services'][service]['return']
-            # Send task
-            task = celery.send_task('tasks.run.package', args=[package, arguments, call, output_file], kwargs={})
-            
+        call = package_manifest['services'][service]['call']
+        output_file = package_manifest['services'][service]['return']
+        # Send task
+        task = celery.send_task('tasks.run.package', args=[package, arguments, call, output_file], kwargs={})
         return jsonify({"result":str(url_for('check_task', task_id=task.id, external=True))})
 
 @app.route('/docs/<package>', methods=['GET'])
 def get_documentation(package):
     # Just return the manifest for now
     if package in PACKAGES:
-        return render_template('documentation.html', package_information=PACKAGES[package])
+        package_data = json.dumps(PACKAGES[package], sort_keys = True, indent = 4, separators = (',', ': '))
+
+        return render_template('documentation.html', package_information=package_data)
     else:
         return render_template('documentation.html', package_information='No package with that name.')
 
@@ -136,9 +131,40 @@ def get_documentation(package):
 def check_task(task_id: str) -> str:
     res = celery.AsyncResult(task_id)
     if res.state == states.PENDING:
-        return res.state 
+        return res.state
     else:
         return {"result":res.result}
+    
+# Returns all necessary arguments for a service in a package
+def get_arguments(package, service, request_data, package_manifest):
+    # Global package arguments
+    arguments = {}
+    for arg in package_manifest['args']:
+        argument_invalid = validate_argument(arguments, arg, request_data)
+        if argument_invalid:
+            return argument_invalid
+    
+    # Service specific arguments
+    if "args" in package_manifest['services'][service]:
+        # We have extra args
+        for arg in package_manifest['services'][service]['args']:
+            # If argument_invalid is populated, we have an error
+            argument_invalid = validate_argument(arguments, arg, request_data)
+            if argument_invalid:
+                return argument_invalid
+            
+    return arguments
+
+# Validates an argument, throws error response if 
+def validate_argument(arguments, arg, request_data):
+    if arg['name'] not in request_data:
+        if 'default' in arg:
+            arguments[arg['name']] = {"value":arg['default'], "type":arg['type']}
+        else:
+            # Error: Required argument was not provided
+            return jsonify({"Error":"Required argument, " + arg['name'] + " was not provided"})
+    else:
+        arguments[arg['name']] = {"value":request_data[arg['name']], "type":arg['type']}
 
 if __name__ == "__main__":
 
