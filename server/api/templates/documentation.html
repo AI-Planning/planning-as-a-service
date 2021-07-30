@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html>
   <head>
-    <title>Solver API</title>
+    <title>Planutils Documentation</title>
     <!--Import Google Icon Font-->
     <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
     <!--Import materialize.css-->
@@ -23,41 +23,17 @@
 
     <div class="container">
       <div class="row">
-        <h3>Call a Planning Solver:</h3>
-        
-        {% for message in get_flashed_messages() %}
-          <p style="color: red;">{{ message }}</p>
-        {% endfor %}
+        <h3>Package Documentation</h3>
       </div>
 
+    <pre>
       <div class="row">
-        <!--  -->
-        <!-- <form action = {{ url_for('solveWithPackage',executable=solver) }} class="col s12" method="POST" enctype="multipart/form-data"> -->
-        <form action = '/solver/' class="col s12" method="POST" enctype="multipart/form-data">
-          <!-- Full names -->
-          <div class="row">
-            <div class="input-field col s2 row s12">
-              <label for="domain">Domain</label>
-            </div>
-            <div class="input-field col s2">
-              <input type="file" name="domain-file" id="domain-file" />
-            </div>
-            <div class="input-field col s2 row s12">
-              <label for="problem-file">Problem</label>
-            </div>
-            <div class="input-field col s3">
-              <input type="file" name="problem-file"  id="problem-file" />
-            </div>
-          </div>
-
-          <button class="btn waves-effect waves-light" type="submit" name="action">Submit
-            <i class="material-icons right">send</i>
-          </button>
-
-        </form>
+          {{package_information}}
       </div>
-
+      
+    </pre>
     </div>
+
 
     <!--JavaScript at end of body for optimized loading-->
     <!-- Compiled and minified JavaScript -->

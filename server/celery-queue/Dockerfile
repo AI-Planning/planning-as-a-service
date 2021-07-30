@@ -11,7 +11,8 @@ ENV PATH=$PATH:~/.planutils/bin
 COPY . /queue
 WORKDIR /queue
 
-RUN planutils install -f lama
+RUN planutils install -f lama-first
+RUN planutils install -f kstar 
 
 RUN pip install -r requirements.txt
 

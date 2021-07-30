@@ -4,8 +4,11 @@ import time
 import tempfile
 import requests
 import subprocess
+import json
 
 from celery import Celery
+from planutils.package_installation import PACKAGES
+
 
 CELERY_BROKER_URL = os.environ.get('CELERY_BROKER_URL', 'redis://localhost:6379/0'),
 CELERY_RESULT_BACKEND = os.environ.get('CELERY_RESULT_BACKEND', 'redis://localhost:6379/0')
@@ -17,10 +20,23 @@ def download_file( url: str, dst: str):
     r = requests.get(url)
     with open(dst, 'wb') as f:
         f.write(r.content)
+        
+def retrieve_output_file(target_file:str, folder):
+    with open(os.path.join(folder, target_file['file']), 'r') as f:
+        output = f.read()
+        if target_file['type'] == 'json':
+            output = json.loads(output)
+    return output
 
+def write_to_temp_file(name:str, data:str, folder:str):
+    path = os.path.join(folder, name)
+    with open(path, 'w') as f:
+        f.write(data)
+    return path
+
+# Solve using downloaded flask files - not strings
 @celery.task(name='tasks.solve')
 def solve(domain_url: str, problem_url: str, solver: str) -> str:
-
     tmpfolder = tempfile.mkdtemp()
 
     if WEB_DOCKER_URL != None:
@@ -32,20 +48,43 @@ def solve(domain_url: str, problem_url: str, solver: str) -> str:
 
     problem_file = f'{tmpfolder}/{os.path.basename(problem_url)}'
     download_file(problem_url, problem_file)
-
-    res = subprocess.run(f'{solver} {domain_file} {problem_file}',
-                            stdout=subprocess.PIPE, stderr=subprocess.PIPE,
-                            executable='/bin/bash', encoding='utf-8',
-                            shell=True, cwd=tmpfolder)
+    
+    # Will generate a single output file (the plan) which is returned via HTTP
+    command = f"{solver} {domain_file} {problem_file}"
+    res = subprocess.run(command, stdout=subprocess.PIPE, stderr=subprocess.PIPE,
+                        executable='/bin/bash', encoding='utf-8',
+                        shell=True, cwd=tmpfolder)
 
     # remove the tmp/fies once we finish
-    os.remove( domain_file )
-    os.remove( problem_file )
+    os.remove(domain_file)
+    os.remove(problem_file)
+    
+    plan = retrieve_output_file(PACKAGES[solver]['endpoint']['return']['file'], tmpfolder)
+    
     shutil.rmtree(tmpfolder)
 
-    return {'stdout': res.stdout, 'stderr': res.stderr}
+    return {'stdout': res.stdout, 'stderr': res.stderr, 'plan':plan}
 
-@celery.task(name='tasks.add')
-def add(x: int, y: int) -> int:
-    time.sleep(5)
-    return x + y
+# Running generic planutils packages with no solver-specific assumptions
+@celery.task(name='tasks.run.package')
+def run_package(package: str, arguments:dict, call:str, output_file:str):
+    tmpfolder = tempfile.mkdtemp()
+    # Write files and replace args in the call string
+    for k, v in arguments.items():
+        if v['type'] == 'file':
+            # Need to write to a temp file
+            path_to_file = write_to_temp_file(k, v['value'], tmpfolder)
+            # k is a file, we want to replace with the file path
+            call = call.replace("{%s}" % k, k)
+        else:
+            # k needs to be replaced with the value 
+            call = call.replace("{%s}" % k, str(v['value']))
+
+    # Run the command
+    res = subprocess.run(call, stdout=subprocess.PIPE, stderr=subprocess.PIPE,
+                        executable='/bin/bash', encoding='utf-8',
+                        shell=True, cwd=tmpfolder)
+    
+    output = retrieve_output_file(output_file, tmpfolder)
+
+    return {"stdout":res.stdout, "stderr":res.stderr, "call":call, "output":output}
