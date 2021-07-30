@@ -69,16 +69,14 @@ def index():
         # This may fail if celery tasks have not finished. May happen while debugging, or in deployed version.
         
         return redirect(url_for('index'))
-    
+
+# Main execution route for running planutils packages
 @app.route('/package/<package>/<service>', methods=['GET', 'POST'])
 def runPackage(package, service):
     # Get request
     if request.method == 'GET':
         # This is where we will send the user to the API documentation
-        if package not in PACKAGES:
-            return make_response("That package does not exist.", 400)
-        else:
-            return jsonify(PACKAGES[package])
+        return redirect(url_for('get_documentation', package=package))
     
     # Post request
     elif request.method == 'POST':
@@ -117,13 +115,27 @@ def runPackage(package, service):
         task = celery.send_task('tasks.run.package', args=[package, arguments, call, output_file], kwargs={})
         return jsonify({"result":str(url_for('check_task', task_id=task.id, external=True))})
 
-@app.route('/docs/<package>', methods=['GET'])
+# Redirects user to documentation for the package
+@app.route('/package/<package>')
+def get_request_for_package(package):
+    return redirect(url_for('get_documentation', package=package))
+
+@app.route('/docs/<package>')
 def get_documentation(package):
-    # Just return the manifest for now
     if package in PACKAGES:
         package_data = json.dumps(PACKAGES[package], sort_keys = True, indent = 4, separators = (',', ': '))
-
         return render_template('documentation.html', package_information=package_data)
+    else:
+        return render_template('documentation.html', package_information='No package with that name.')
+    
+@app.route('/docs/<package>/<service>')
+def get_documentation_service(package, service):
+    if package in PACKAGES:
+        if service in PACKAGES[package]['endpoint']['services']:
+            package_data = json.dumps(PACKAGES[package]['endpoint']['services'][service], sort_keys = True, indent = 4, separators = (',', ': '))
+            return render_template('documentation.html', package_information=package_data)
+        else:
+            return render_template('documentation.html', package_information='' + package + " does not have service: " + service)
     else:
         return render_template('documentation.html', package_information='No package with that name.')
 
