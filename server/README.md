@@ -112,6 +112,7 @@ A simple python script to send a POST request to the lama-first planner, getting
 ```
 import requests
 import time
+from pprint import pprint
 
 req_body = {
     "domain":"(define (domain BLOCKS) (:requirements :strips) (:predicates (on ?x ?y) (ontable ?x) (clear ?x) (handempty) (holding ?x) ) (:action pick-up :parameters (?x) :precondition (and (clear ?x) (ontable ?x) (handempty)) :effect (and (not (ontable ?x)) (not (clear ?x)) (not (handempty)) (holding ?x))) (:action put-down :parameters (?x) :precondition (holding ?x) :effect (and (not (holding ?x)) (clear ?x) (handempty) (ontable ?x))) (:action stack :parameters (?x ?y) :precondition (and (holding ?x) (clear ?y)) :effect (and (not (holding ?x)) (not (clear ?y)) (clear ?x) (handempty) (on ?x ?y))) (:action unstack :parameters (?x ?y) :precondition (and (on ?x ?y) (clear ?x) (handempty)) :effect (and (holding ?x) (clear ?y) (not (clear ?x)) (not (handempty)) (not (on ?x ?y)))))",
@@ -127,11 +128,13 @@ while celery_result.text == 'PENDING':
 	celery_result = requests.get('http://localhost:5001' + solve_request['result'])
 	time.sleep(0.5)
 
-print(celery_result.json())
+pprint(celery_result.json())
 ```
 
 This python code will run a test POST request on the lama-first solver, and return the link to access the result from the celery queue. In the meantime, the program 
 polls for the task to be completed, and prints out the returned json when it is. 
+
+* Note: This script needs to be run in the same environment as the docker container
 
 
 ## Docker Flask Celery Redis
