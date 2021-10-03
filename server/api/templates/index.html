@@ -32,21 +32,20 @@
 
       <div class="row">
         <!--  -->
-        <!-- <form action = {{ url_for('solveWithPackage',executable=solver) }} class="col s12" method="POST" enctype="multipart/form-data"> -->
-        <form action = '/solver/' class="col s12" method="POST" enctype="multipart/form-data">
+       <form action = '/solver/' class="col s12" method="POST" enctype="multipart/form-data">
           <!-- Full names -->
           <div class="row">
             <div class="input-field col s2 row s12">
               <label for="domain">Domain</label>
             </div>
             <div class="input-field col s2">
-              <input type="file" name="domain-file" id="domain-file" />
+              <input type="file" name="domain" id="domain" />
             </div>
             <div class="input-field col s2 row s12">
-              <label for="problem-file">Problem</label>
+              <label for="problem">Problem</label>
             </div>
             <div class="input-field col s3">
-              <input type="file" name="problem-file"  id="problem-file" />
+              <input type="file" name="problem"  id="problem" />
             </div>
           </div>
 

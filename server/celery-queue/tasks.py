@@ -5,6 +5,7 @@ import tempfile
 import requests
 import subprocess
 import json
+import glob
 
 from celery import Celery
 from planutils.package_installation import PACKAGES
@@ -21,11 +22,17 @@ def download_file( url: str, dst: str):
     with open(dst, 'wb') as f:
         f.write(r.content)
         
-def retrieve_output_file(target_file:str, folder):
-    with open(os.path.join(folder, target_file['file']), 'r') as f:
-        output = f.read()
-        if target_file['type'] == 'json':
-            output = json.loads(output)
+def retrieve_output_file(target_file:dict, folder):
+    file_pattern=os.path.join(folder, target_file["files"])
+    file_list=glob.glob(file_pattern)
+    output={}
+    for file in file_list:
+        file_name=os.path.basename(file)
+        with open(file, 'r') as f:
+            file_content = f.read()
+            if target_file['type'] == 'json':
+                file_content = json.loads(file_content)
+        output[file_name]=file_content
     return output
 
 def write_to_temp_file(name:str, data:str, folder:str):
@@ -59,7 +66,7 @@ def solve(domain_url: str, problem_url: str, solver: str) -> str:
     os.remove(domain_file)
     os.remove(problem_file)
     
-    plan = retrieve_output_file(PACKAGES[solver]['endpoint']['return']['file'], tmpfolder)
+    plan = retrieve_output_file(PACKAGES[solver]['endpoint']['services']['solve']['return']['file'], tmpfolder)
     
     shutil.rmtree(tmpfolder)
 
@@ -67,7 +74,7 @@ def solve(domain_url: str, problem_url: str, solver: str) -> str:
 
 # Running generic planutils packages with no solver-specific assumptions
 @celery.task(name='tasks.run.package')
-def run_package(package: str, arguments:dict, call:str, output_file:str):
+def run_package(package: str, arguments:dict, call:str, output_file:dict):
     tmpfolder = tempfile.mkdtemp()
     # Write files and replace args in the call string
     for k, v in arguments.items():

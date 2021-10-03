@@ -40,12 +40,12 @@ def index():
     elif request.method == 'POST':
 
         # Get files
-        form_problem = request.files["problem-file"]
-        form_domain = request.files["domain-file"]
-
+        form_domain = request.files["domain"]
+        form_problem = request.files["problem"]
+        
         # Check that files were provided
         if form_problem.filename == '' or form_domain.filename == '':
-            flash('No selected file')
+            flash('Domain or Problem file is missing')
             return redirect(request.url)
 
         # Save file with Flask-upload
@@ -84,33 +84,24 @@ def runPackage(package, service):
         if package not in PACKAGES:
             return jsonify({"Error":"That package does not exist"})
         
-        if service not in PACKAGES[package]['endpoint']['services']:
-            return jsonify({"Error":"That package does not contain service " + service})
-        
         if 'endpoint' not in PACKAGES[package]:
             return jsonify({"Error":"That package does not contain an API endpoint"})
+
+        if service not in PACKAGES[package]['endpoint']['services']:
+            return jsonify({"Error":"That package does not contain service " + service})
         
         # Grabs the request data (JSON)
         request_data = request.get_json()
         # Contains manifest information
-        package_manifest = PACKAGES[package]['endpoint']
+        package_manifest = PACKAGES[package]['endpoint']['services'][service]
         
-        # If its a generic solver, we can make assumptions
-        if service == 'solve' and package_manifest['type'] == 'solver':
-            if 'domain' not in request_data:
-                return jsonify({"Error":"Missing required argument: domain"})
-            if 'problem' not in request_data:
-                return jsonify({"Error":"Missing required argument: problem"})
+        # Get all necessary arguments for the service from request_data
+        arguments = get_arguments(request_data, package_manifest)
+        if 'Error' in arguments:
+            return arguments
             
-            arguments = {'domain':{"value":request_data['domain'], "type":"file"}, 'problem':{"value":request_data['problem'], "type":"file"}}
-        else:
-            # Get all necessary arguments for the service from request_data
-            arguments = get_arguments(package, service, request_data, package_manifest)
-            if 'Error' in arguments:
-                return arguments
-            
-        call = package_manifest['services'][service]['call']
-        output_file = package_manifest['services'][service]['return']
+        call = package_manifest['call']
+        output_file = package_manifest['return']
         # Send task
         task = celery.send_task('tasks.run.package', args=[package, arguments, call, output_file], kwargs={})
         return jsonify({"result":str(url_for('check_task', task_id=task.id, external=True))})
@@ -148,35 +139,23 @@ def check_task(task_id: str) -> str:
         return {"result":res.result}
     
 # Returns all necessary arguments for a service in a package
-def get_arguments(package, service, request_data, package_manifest):
+def get_arguments(request_data, package_manifest):
     # Global package arguments
-    arguments = {}
-    for arg in package_manifest['args']:
-        argument_invalid = validate_argument(arguments, arg, request_data)
-        if argument_invalid:
-            return argument_invalid
-    
+    arguments = {}    
     # Service specific arguments
-    if "args" in package_manifest['services'][service]:
+    if "args" in package_manifest:
         # We have extra args
-        for arg in package_manifest['services'][service]['args']:
+        for arg in package_manifest['args']:
             # If argument_invalid is populated, we have an error
-            argument_invalid = validate_argument(arguments, arg, request_data)
-            if argument_invalid:
-                return argument_invalid
-            
+            arg_name=arg['name']
+            arg_type=arg['type']
+            if arg_name not in request_data:
+                # Error: Required argument was not provided
+                return jsonify({"Error":"Required argument, " + arg_name + " was not provided"})
+            else:
+                arguments[arg_name] = {"value":request_data[arg_name], "type":arg_type}
     return arguments
 
-# Validates an argument, throws error response if 
-def validate_argument(arguments, arg, request_data):
-    if arg['name'] not in request_data:
-        if 'default' in arg:
-            arguments[arg['name']] = {"value":arg['default'], "type":arg['type']}
-        else:
-            # Error: Required argument was not provided
-            return jsonify({"Error":"Required argument, " + arg['name'] + " was not provided"})
-    else:
-        arguments[arg['name']] = {"value":request_data[arg['name']], "type":arg['type']}
 
 if __name__ == "__main__":
 
