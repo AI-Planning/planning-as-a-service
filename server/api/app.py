@@ -98,7 +98,7 @@ def runPackage(package, service):
         # Get all necessary arguments for the service from request_data
         arguments = get_arguments(request_data, package_manifest)
         if 'Error' in arguments:
-            return arguments
+            return jsonify(arguments)
             
         call = package_manifest['call']
         output_file = package_manifest['return']
@@ -151,7 +151,7 @@ def get_arguments(request_data, package_manifest):
             arg_type=arg['type']
             if arg_name not in request_data:
                 # Error: Required argument was not provided
-                return jsonify({"Error":"Required argument, " + arg_name + " was not provided"})
+                return {"Error":"Required argument, " + arg_name + " was not provided"}
             else:
                 arguments[arg_name] = {"value":request_data[arg_name], "type":arg_type}
     return arguments
