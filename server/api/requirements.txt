@@ -6,6 +6,7 @@ chardet==3.0.4
 click==7.1.2
 Flask==1.1.2
 Flask-Uploads==0.2.1
+Flask-Limiter==1.4
 future==0.18.2
 humanize==2.5.0
 idna==2.10

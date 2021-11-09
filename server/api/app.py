@@ -5,6 +5,9 @@ from flask import url_for
 from flask import flash, Markup, render_template, request, redirect, send_file, make_response, jsonify, json
 from flask_uploads  import (UploadSet, configure_uploads, IMAGES,
                               UploadNotAllowed)
+from flask_limiter import Limiter
+from flask_limiter.util import get_remote_address
+
 
 from werkzeug.utils import secure_filename
 
@@ -16,6 +19,16 @@ from worker import celery
 import celery.states as states
 
 app = Flask(__name__)
+
+
+# Limiter for DDOS attach
+
+limiter = Limiter(
+    app,
+    key_func=get_remote_address,
+    default_limits=["1/10second"]
+)
+
 
 # Load config.py info
 app.config.from_object("config")
@@ -33,6 +46,7 @@ app.config['MAX_CONTENT_LENGTH'] = 16 * 1024 * 1024
 
 # Solver API
 @app.route('/solver/', methods=['GET', 'POST'])
+@limiter.limit("1/10second", error_message="Sorry, we're busy. Please try again after 10 seconds.")
 def index():
     if request.method == 'GET':
         return render_template('index.html')
@@ -72,6 +86,7 @@ def index():
 
 # Main execution route for running planutils packages
 @app.route('/package/<package>/<service>', methods=['GET', 'POST'])
+@limiter.limit("1/10second", error_message="Sorry, we're busy. Please try again after 10 seconds.")
 def runPackage(package, service):
     # Get request
     if request.method == 'GET':
@@ -108,10 +123,12 @@ def runPackage(package, service):
 
 # Redirects user to documentation for the package
 @app.route('/package/<package>')
+@limiter.limit("1/10second", error_message="Sorry, we're busy. Please try again after 10 seconds.")
 def get_request_for_package(package):
     return redirect(url_for('get_documentation', package=package))
 
 @app.route('/docs/<package>')
+@limiter.limit("1/10second", error_message="Sorry, we're busy. Please try again after 10 seconds.")
 def get_documentation(package):
     if package in PACKAGES:
         package_data = json.dumps(PACKAGES[package], sort_keys = True, indent = 4, separators = (',', ': '))
@@ -120,6 +137,7 @@ def get_documentation(package):
         return render_template('documentation.html', package_information='No package with that name.')
     
 @app.route('/docs/<package>/<service>')
+@limiter.limit("1/10second", error_message="Sorry, we're busy. Please try again after 10 seconds.")
 def get_documentation_service(package, service):
     if package in PACKAGES:
         if service in PACKAGES[package]['endpoint']['services']:
@@ -131,6 +149,7 @@ def get_documentation_service(package, service):
         return render_template('documentation.html', package_information='No package with that name.')
 
 @app.route('/check/<string:task_id>')
+@limiter.limit("1/10second", error_message="Sorry, we're busy. Please try again after 10 seconds.")
 def check_task(task_id: str) -> str:
     res = celery.AsyncResult(task_id)
     if res.state == states.PENDING:
@@ -158,5 +177,4 @@ def get_arguments(request_data, package_manifest):
 
 
 if __name__ == "__main__":
-
     app.run("0.0.0.0", port=5001, debug=True)
