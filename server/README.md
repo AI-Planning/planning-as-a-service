@@ -95,63 +95,77 @@ code . &
 Go to the debug symbol add breakpoints and debug as shown below:
 ![image](https://github.com/AI-Planning/planning-as-a-service/blob/master/docs/videos/debug.gif)
 
-### Planutils (NOT WORKING)
+### Planutils 
 
-planutils fails to setup in a python virtual environment:
+We can execute Planutils packages with the defined API
 
-```bash
-sudo apt install singularity
+`http://localhost:5001/package/{package_name}/{package_service}`
+
+The required arguments for the POST request are defined in the Planutils package manifests, and can be easily viewed at: 
+
+`http://localhost:5001/docs/{package_name}`
+### Update Planutils on the server
+Once you have login to the Ubuntu server.
+
+1.List all the containers:
+`
+sudo docker container ls -a
+`
+![image](https://github.com/AI-Planning/planning-as-a-service/blob/planutils-functionality/docs/videos/containers.png)
+
+2.We have to update planutils in the `server_worker` and `server_web` containers. You have to run commands 2.1 to 2.4 for both container.
+
+2.1 Use the following command to login to the container:
+`sudo docker exec -it containerID bash`
+
+2.2 In the container terminal, type the following command to update the latest planutils on the `manifest-new-version` branch.
+```
+git clone https://github.com/AI-Planning/planutils.git
+cd planutils
+git checkout manifest-new-version
+pip uninstall planutils
+python3 setup.py install --old-and-unmanageable
 planutils setup
-planutils install lama
+```
+2.3 Then install the planner using the following command:
+```
+planutils install plannername
 ```
 
-You get
+2.4 Leave the container use `exit`
 
-```bash
- planutils install lama
 
-About to install the following packages: downward (36M), lama (20K)
-  Proceed? [Y/n] Y
-Installing downward...
-Singularity 1.0b1 (commit: b0d3406e311f4ac3aa6f4d0187f32926b3808fef)
-Running under Python 3.8.2 (default, Apr 27 2020, 15:53:34) [GCC 9.3.0]
-pygame 1.9.6
-Hello from the pygame community. https://www.pygame.org/contribute.html
-The error-log configured as /home/nirlipo/.local/share/singularity/log/error.log (lazily created when something is logged)
-Usage: singularity [options]
+### Example use
 
-singularity: error: no such option: --name
-
-Error installing downward. Rolling back changes...
+A simple python script to send a POST request to the lama-first planner, getting back stdout, stderr, and the generated plan:
 
 ```
+import requests
+import time
+from pprint import pprint
 
-If you remove the --name from ```env/lib/plauntils/packages/downward/install``` the installation proceeds but fails after few seconds:
+req_body = {
+    "domain":"(define (domain BLOCKS) (:requirements :strips) (:predicates (on ?x ?y) (ontable ?x) (clear ?x) (handempty) (holding ?x) ) (:action pick-up :parameters (?x) :precondition (and (clear ?x) (ontable ?x) (handempty)) :effect (and (not (ontable ?x)) (not (clear ?x)) (not (handempty)) (holding ?x))) (:action put-down :parameters (?x) :precondition (holding ?x) :effect (and (not (holding ?x)) (clear ?x) (handempty) (ontable ?x))) (:action stack :parameters (?x ?y) :precondition (and (holding ?x) (clear ?y)) :effect (and (not (holding ?x)) (not (clear ?y)) (clear ?x) (handempty) (on ?x ?y))) (:action unstack :parameters (?x ?y) :precondition (and (on ?x ?y) (clear ?x) (handempty)) :effect (and (holding ?x) (clear ?y) (not (clear ?x)) (not (handempty)) (not (on ?x ?y)))))",
+    "problem":"(define (problem BLOCKS-4-0) (:domain BLOCKS) (:objects D B A C ) (:INIT (CLEAR C) (CLEAR A) (CLEAR B) (CLEAR D) (ONTABLE C) (ONTABLE A) (ONTABLE B) (ONTABLE D) (HANDEMPTY)) (:goal (AND (ON D C) (ON C B) (ON B A))) )"
+}
 
-```bash
-$ planutils install lama
+solve_request = requests.post("http://localhost:5001/package/lama-first/solve", json=req_body).json()
 
-About to install the following packages: downward (36M), lama (20K)
-  Proceed? [Y/n] Y
-Installing downward...
-Singularity 1.0b1 (commit: b0d3406e311f4ac3aa6f4d0187f32926b3808fef)
-Running under Python 3.8.2 (default, Apr 27 2020, 15:53:34) [GCC 9.3.0]
-pygame 1.9.6
-Hello from the pygame community. https://www.pygame.org/contribute.html
-The error-log configured as /home/nirlipo/.local/share/singularity/log/error.log (lazily created when something is logged)
+celery_result = requests.get('http://localhost:5001' + solve_request['result'])
 
+print('Computing...')
+while celery_result.text == 'PENDING':
+	celery_result = requests.get('http://localhost:5001' + solve_request['result'])
+	time.sleep(0.5)
 
-Fatal Python error: (pygame parachute) Segmentation Fault
-Python runtime state: initialized
-
-Current thread 0x00007fc2b0788740 (most recent call first):
-  File "/usr/lib/python3/dist-packages/singularity/__init__.py", line 346 in main
-  File "/usr/games/singularity", line 11 in <module>
-./install: line 3:  4445 Aborted                 singularity pull downward.sif shub://aibasel/downward
-
-Error installing downward. Rolling back changes...
-rm: cannot remove 'downward.sif': No such file or directory
+pprint(celery_result.json())
 ```
+
+This python code will run a test POST request on the lama-first solver, and return the link to access the result from the celery queue. In the meantime, the program 
+polls for the task to be completed, and prints out the returned json when it is. 
+
+* Note: This script needs to be run in the same environment as the docker container
+
 
 ## Docker Flask Celery Redis
 
