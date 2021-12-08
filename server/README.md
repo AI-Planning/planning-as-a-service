@@ -113,7 +113,7 @@ sudo docker container ls -a
 `
 ![image](https://github.com/AI-Planning/planning-as-a-service/blob/planutils-functionality/docs/videos/containers.png)
 
-2.We have to update planutils in the `server_worker` and `server_web` containers. You have to run commands 2.1 to 2.4 for both container.
+2.We have to update planutils in the `server_worker` and `server_web` containers. You have to run commands 2.1 to 2.4 for both containers.
 
 2.1 Use the following command to login to the container:
 `sudo docker exec -it containerID bash`
