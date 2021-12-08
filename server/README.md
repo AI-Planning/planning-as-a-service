@@ -134,6 +134,12 @@ planutils install plannername
 
 2.4 Leave the container use `exit`
 
+3 Finally, restart all the containers use the following command. Please make sure you are under this folder `ubuntu@plan-as-service:~/planning-as-a-service/server`.
+
+`
+sudo docker-compose restart
+`
+
 
 ### Example use
 
