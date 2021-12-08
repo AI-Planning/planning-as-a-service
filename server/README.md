@@ -104,6 +104,36 @@ We can execute Planutils packages with the defined API
 The required arguments for the POST request are defined in the Planutils package manifests, and can be easily viewed at: 
 
 `http://localhost:5001/docs/{package_name}`
+### Update Planutils on the server
+Once you have login to the Ubuntu server.
+
+1.List all the containers:
+`
+sudo docker container ls -a
+`
+![image](https://github.com/AI-Planning/planning-as-a-service/blob/planutils-functionality/docs/videos/containers.png)
+
+2.We have to update planutils in the `server_worker` and `server_web` containers. You have to run commands 2.1 to 2.4 for both container.
+
+2.1 Use the following command to login to the container:
+`sudo docker exec -it containerID bash`
+
+2.2 In the container terminal, type the following command to update the latest planutils on the `manifest-new-version` branch.
+```
+git clone https://github.com/AI-Planning/planutils.git
+cd planutils
+git checkout manifest-new-version
+pip uninstall planutils
+python3 setup.py install --old-and-unmanageable
+planutils setup
+```
+2.3 Then install the planner using the following command:
+```
+planutils install plannername
+```
+
+2.4 Leave the container use `exit`
+
 
 ### Example use
 
