@@ -9,14 +9,14 @@ import glob
 
 from celery import Celery
 from planutils.package_installation import PACKAGES
-
+from celery.exceptions import SoftTimeLimitExceeded
 
 CELERY_BROKER_URL = os.environ.get('CELERY_BROKER_URL', 'redis://localhost:6379/0'),
 CELERY_RESULT_BACKEND = os.environ.get('CELERY_RESULT_BACKEND', 'redis://localhost:6379/0')
 WEB_DOCKER_URL = os.environ.get('WEB_DOCKER_URL', None)
 
 celery = Celery('tasks', broker=CELERY_BROKER_URL, backend=CELERY_RESULT_BACKEND)
-
+celery.conf.
 def download_file( url: str, dst: str):
     r = requests.get(url)
     with open(dst, 'wb') as f:
@@ -73,25 +73,28 @@ def solve(domain_url: str, problem_url: str, solver: str) -> str:
     return {'stdout': res.stdout, 'stderr': res.stderr, 'plan':plan}
 
 # Running generic planutils packages with no solver-specific assumptions
-@celery.task(name='tasks.run.package')
+@celery.task(name='tasks.run.package',soft_time_limit=180)
 def run_package(package: str, arguments:dict, call:str, output_file:dict):
-    tmpfolder = tempfile.mkdtemp()
-    # Write files and replace args in the call string
-    for k, v in arguments.items():
-        if v['type'] == 'file':
-            # Need to write to a temp file
-            path_to_file = write_to_temp_file(k, v['value'], tmpfolder)
-            # k is a file, we want to replace with the file path
-            call = call.replace("{%s}" % k, k)
-        else:
-            # k needs to be replaced with the value 
-            call = call.replace("{%s}" % k, str(v['value']))
+    try:
+        tmpfolder = tempfile.mkdtemp()
+        # Write files and replace args in the call string
+        for k, v in arguments.items():
+            if v['type'] == 'file':
+                # Need to write to a temp file
+                path_to_file = write_to_temp_file(k, v['value'], tmpfolder)
+                # k is a file, we want to replace with the file path
+                call = call.replace("{%s}" % k, k)
+            else:
+                # k needs to be replaced with the value 
+                call = call.replace("{%s}" % k, str(v['value']))
 
-    # Run the command
-    res = subprocess.run(call, stdout=subprocess.PIPE, stderr=subprocess.PIPE,
-                        executable='/bin/bash', encoding='utf-8',
-                        shell=True, cwd=tmpfolder)
-    
-    output = retrieve_output_file(output_file, tmpfolder)
+        # Run the command
+        res = subprocess.run(call, stdout=subprocess.PIPE, stderr=subprocess.PIPE,
+                            executable='/bin/bash', encoding='utf-8',
+                            shell=True, cwd=tmpfolder)
+        
+        output = retrieve_output_file(output_file, tmpfolder)
 
-    return {"stdout":res.stdout, "stderr":res.stderr, "call":call, "output":output}
+        return {"stdout":res.stdout, "stderr":res.stderr, "call":call, "output":output}
+    except SoftTimeLimitExceeded as e:
+        return {"stdout":"Request Time Out", "stderr":"", "call":call, "output":""}

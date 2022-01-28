@@ -24,7 +24,7 @@ services:
     ports:
      - "5555:5555"
     entrypoint: flower
-    command:  -A tasks --port=5555 --broker=redis://redis:6379/0
+    command:  -A tasks --port=5555 --broker=redis://redis:6379/0 --basic_auth=root:root
     depends_on:
       - redis
   redis:

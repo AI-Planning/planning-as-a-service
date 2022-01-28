@@ -16,4 +16,6 @@ RUN planutils install -f kstar
 
 RUN pip install -r requirements.txt
 
-ENTRYPOINT celery -A tasks worker --loglevel=info
+# Max-Memory-Settings
+# https://docs.celeryproject.org/en/stable/userguide/workers.html#max-tasks-per-child-setting
+ENTRYPOINT celery -A tasks worker --loglevel=info --max-memory-per-child=12000
