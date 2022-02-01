@@ -16,7 +16,7 @@ CELERY_RESULT_BACKEND = os.environ.get('CELERY_RESULT_BACKEND', 'redis://localho
 WEB_DOCKER_URL = os.environ.get('WEB_DOCKER_URL', None)
 
 celery = Celery('tasks', broker=CELERY_BROKER_URL, backend=CELERY_RESULT_BACKEND)
-celery.conf.
+
 def download_file( url: str, dst: str):
     r = requests.get(url)
     with open(dst, 'wb') as f:
@@ -95,6 +95,6 @@ def run_package(package: str, arguments:dict, call:str, output_file:dict):
         
         output = retrieve_output_file(output_file, tmpfolder)
 
-        return {"stdout":res.stdout, "stderr":res.stderr, "call":call, "output":output}
+        return {"stdout":res.stdout, "stderr":res.stderr, "call":call, "output":output},arguments
     except SoftTimeLimitExceeded as e:
-        return {"stdout":"Request Time Out", "stderr":"", "call":call, "output":""}
+        return {"stdout":"Request Time Out", "stderr":"", "call":call, "output":""},arguments

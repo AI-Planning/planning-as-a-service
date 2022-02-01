@@ -8,7 +8,6 @@ from flask_uploads  import (UploadSet, configure_uploads, IMAGES,
 from flask_limiter import Limiter
 from flask_limiter.util import get_remote_address
 
-
 from werkzeug.utils import secure_filename
 
 from base64 import b64encode
@@ -17,6 +16,9 @@ from planutils.package_installation import PACKAGES
 
 from worker import celery
 import celery.states as states
+
+# Adaptor
+from adaptor.adaptor import Adaptor
 
 app = Flask(__name__)
 
@@ -155,7 +157,19 @@ def check_task(task_id: str) -> str:
     if res.state == states.PENDING:
         return res.state
     else:
-        return {"result":res.result}
+        request_data = request.get_json()
+        result,arguments=res.result
+        if request_data and "adaptor" in request_data:
+            adaptor=Adaptor()
+            try:
+                transformed_result=adaptor.get_result(request_data["adaptor"],result=result,arguments=arguments,request_data=request_data)
+                return transformed_result
+            except:
+                return "Adaptor not found", 400
+        else:
+            # Return the default result format
+            
+            return {"result":result}
     
 # Returns all necessary arguments for a service in a package
 def get_arguments(request_data, package_manifest):
