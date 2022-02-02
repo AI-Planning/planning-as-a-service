@@ -14,6 +14,7 @@ from celery.exceptions import SoftTimeLimitExceeded
 CELERY_BROKER_URL = os.environ.get('CELERY_BROKER_URL', 'redis://localhost:6379/0'),
 CELERY_RESULT_BACKEND = os.environ.get('CELERY_RESULT_BACKEND', 'redis://localhost:6379/0')
 WEB_DOCKER_URL = os.environ.get('WEB_DOCKER_URL', None)
+TIME_LIMIT=os.environ.get('TIME_LIMIT', 180)
 
 celery = Celery('tasks', broker=CELERY_BROKER_URL, backend=CELERY_RESULT_BACKEND)
 
@@ -73,7 +74,7 @@ def solve(domain_url: str, problem_url: str, solver: str) -> str:
     return {'stdout': res.stdout, 'stderr': res.stderr, 'plan':plan}
 
 # Running generic planutils packages with no solver-specific assumptions
-@celery.task(name='tasks.run.package',soft_time_limit=180)
+@celery.task(name='tasks.run.package',soft_time_limit=TIME_LIMIT)
 def run_package(package: str, arguments:dict, call:str, output_file:dict):
     try:
         tmpfolder = tempfile.mkdtemp()

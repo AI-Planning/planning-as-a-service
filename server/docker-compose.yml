@@ -10,13 +10,19 @@ services:
      - "5001:5001"
     depends_on:
       - redis
+
   worker:
     privileged: true
     build:
       context: celery-queue
       dockerfile: Dockerfile
+    environment:
+      - TIME_LIMIT=${TIME_LIMIT}
+    entrypoint: celery
+    command: -A tasks worker --loglevel=info --max-memory-per-child=${MAX_MEMORY_PER_CHILD}
     depends_on:
       - redis
+    
   monitor:
     build:
       context: celery-queue
@@ -24,7 +30,7 @@ services:
     ports:
      - "5555:5555"
     entrypoint: flower
-    command:  -A tasks --port=5555 --broker=redis://redis:6379/0 --basic_auth=root:root
+    command:  -A tasks --port=5555 --broker=redis://redis:6379/0 --basic_auth=${FLOWER_USERNAME}:${FLOWER_PASSWORD}
     depends_on:
       - redis
   redis:

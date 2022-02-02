@@ -2,6 +2,7 @@
 
 FROM aiplanning/planutils:latest
 
+
 ENV CELERY_BROKER_URL redis://redis:6379/0
 ENV CELERY_RESULT_BACKEND redis://redis:6379/0
 ENV C_FORCE_ROOT true
@@ -12,10 +13,6 @@ COPY . /queue
 WORKDIR /queue
 
 RUN planutils install -f lama-first
-RUN planutils install -f kstar 
+
 
 RUN pip install -r requirements.txt
-
-# Max-Memory-Settings
-# https://docs.celeryproject.org/en/stable/userguide/workers.html#max-tasks-per-child-setting
-ENTRYPOINT celery -A tasks worker --loglevel=info --max-memory-per-child=12000

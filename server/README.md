@@ -39,6 +39,13 @@ To change the endpoints, update the code in [api/app.py](api/app.py)
 
 Task changes should happen in [queue/tasks.py](celery-queue/tasks.py)
 
+### ENV File
+
+*FLOWER_USERNAME=root #Flower Moinitor Username
+*FLOWER_PASSWORD=root #Flower Moinitor Password
+*MAX_MEMORY_PER_CHILD=12000 # Max memory can be allocated a task
+*TIME_LIMIT=180 #Time limit per task
+
 ## API
 
 - Planning solver: [localhost:5001/solver/](http://localhost:5001/solver/)
@@ -113,7 +120,7 @@ sudo docker container ls -a
 `
 ![image](https://github.com/AI-Planning/planning-as-a-service/blob/planutils-functionality/docs/videos/containers.png)
 
-2.We have to update planutils in the `server_worker` and `server_web` containers. You have to run commands 2.1 to 2.4 for both containers.
+2.We have to update planutils in the `server_worker` and `server_web` containers. You have to run commands 2.1 to 2.4 for both container.
 
 2.1 Use the following command to login to the container:
 `sudo docker exec -it containerID bash`
@@ -133,12 +140,6 @@ planutils install plannername
 ```
 
 2.4 Leave the container use `exit`
-
-3 Finally, restart all the containers use the following command. Please make sure you are under this folder `ubuntu@plan-as-service:~/planning-as-a-service/server`.
-
-`
-sudo docker-compose restart
-`
 
 
 ### Example use

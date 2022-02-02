@@ -19,5 +19,5 @@ EXPOSE 5001
 
 RUN pip install gunicorn
 
-# run the app server
+# # run the app server
 CMD ["gunicorn", "--bind", "0.0.0.0:5001", "--workers", "3", "app:app"]
