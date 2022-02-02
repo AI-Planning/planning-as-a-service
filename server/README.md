@@ -9,6 +9,15 @@ git clone https://github.com/AI-Planning/planning-as-a-service
 cd planning-as-a-service/server
 ```
 
+Set up .env file:
+
+Please create a new environment file called .env, and set up the following variable. You can reference the provided `.env.example` file.
+
+* FLOWER_USERNAME=username #Flower Moinitor Username
+* FLOWER_PASSWORD=password #Flower Moinitor Password
+* MAX_MEMORY_PER_CHILD=12000 # Max memory can be allocated a task
+* TIME_LIMIT=180 #Time limit per task
+
 Start Docker:
 
 ```bash
@@ -39,12 +48,7 @@ To change the endpoints, update the code in [api/app.py](api/app.py)
 
 Task changes should happen in [queue/tasks.py](celery-queue/tasks.py)
 
-### ENV File
 
-*FLOWER_USERNAME=root #Flower Moinitor Username
-*FLOWER_PASSWORD=root #Flower Moinitor Password
-*MAX_MEMORY_PER_CHILD=12000 # Max memory can be allocated a task
-*TIME_LIMIT=180 #Time limit per task
 
 ## API
 
