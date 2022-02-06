@@ -19,9 +19,12 @@ import celery.states as states
 
 # Adaptor
 from adaptor.adaptor import Adaptor
+from flask_cors import CORS
+
 
 app = Flask(__name__)
-
+# allow CORS for all domains on all routes
+CORS(app)
 
 # Limiter for DDOS attach
 
@@ -93,7 +96,10 @@ def runPackage(package, service):
     # Get request
     if request.method == 'GET':
         # This is where we will send the user to the API documentation
-        return redirect(url_for('get_documentation', package=package))
+        if package in PACKAGES:
+            return jsonify(PACKAGES[package])
+        else:
+            return jsonify({"Error":"That package does not exist"})
     
     # Post request
     elif request.method == 'POST':
@@ -150,26 +156,30 @@ def get_documentation_service(package, service):
     else:
         return render_template('documentation.html', package_information='No package with that name.')
 
-@app.route('/check/<string:task_id>')
+@app.route('/check/<string:task_id>', methods=['GET', 'POST'])
 @limiter.limit("1/10second", error_message="Sorry, we're busy. Please try again after 10 seconds.")
 def check_task(task_id: str) -> str:
     res = celery.AsyncResult(task_id)
     if res.state == states.PENDING:
-        return res.state
+        return {"status":res.state}
     else:
-        request_data = request.get_json()
-        result,arguments=res.result
-        if request_data and "adaptor" in request_data:
-            adaptor=Adaptor()
-            try:
-                transformed_result=adaptor.get_result(request_data["adaptor"],result=result,arguments=arguments,request_data=request_data)
-                return transformed_result
-            except:
-                return "Adaptor not found", 400
-        else:
-            # Return the default result format
-            
+        #Get requst
+        if request.method == 'GET':
             return {"result":result}
+        # Post request
+        elif request.method == 'POST':
+            request_data = request.get_json()
+            result,arguments=res.result
+            if request_data and "adaptor" in request_data:
+                adaptor=Adaptor()
+                try:
+                    transformed_result=adaptor.get_result(request_data["adaptor"],result=result,arguments=arguments,request_data=request_data)
+                    return transformed_result
+                except:
+                    return "Adaptor not found", 400
+            else:
+                # Return the default result format
+                return {"result":result}
     
 # Returns all necessary arguments for a service in a package
 def get_arguments(request_data, package_manifest):
