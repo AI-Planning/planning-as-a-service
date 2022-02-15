@@ -13,6 +13,8 @@ from werkzeug.utils import secure_filename
 from base64 import b64encode
 
 from planutils.package_installation import PACKAGES
+from planutils import settings
+import copy
 
 from worker import celery
 import celery.states as states
@@ -128,6 +130,25 @@ def runPackage(package, service):
         # Send task
         task = celery.send_task('tasks.run.package', args=[package, arguments, call, output_file], kwargs={})
         return jsonify({"result":str(url_for('check_task', task_id=task.id, external=True))})
+
+
+
+# Redirects user to documentation for the package
+@app.route('/package')
+@limiter.limit("1/10second", error_message="Sorry, we're busy. Please try again after 10 seconds.")
+def get_available_package():
+    all_packages=copy.deepcopy(PACKAGES)
+
+    installed_package=settings.load()['installed']
+    for package in all_packages:
+        all_packages[package]["package_name"]=package
+    
+    # # print(package.get("endpoint", {}).get("services", {}))
+    insterested_package=[all_packages[package] for package in all_packages if package in installed_package if "solve" in all_packages[package].get("endpoint", {}).get("services", {}) ]
+    # insterested_package=[package for package in PACKAGES if package in installed_package]
+    # insterested_package=[package for package in PACKAGES if package in installed_package if "solve" in package.get("endpoint", {}).get("services", {})]
+    return jsonify(insterested_package)
+
 
 # Redirects user to documentation for the package
 @app.route('/package/<package>')

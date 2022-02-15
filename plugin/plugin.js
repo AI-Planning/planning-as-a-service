@@ -28,8 +28,6 @@ var PAS_MODEL = `
           <label for="solverPASSelection" class="col-sm-4 control-label">Solver</label>
           <div class="col-sm-8">
             <select id="solverPASSelection" class="form-control file-selection">
-            <option value="lama-first">Lama-first</option>
-            <option value="lama">Lama</option>
             </select>
           </div>
         </div>    
@@ -59,28 +57,24 @@ var PAS_MODEL = `
 </div>
 `
 
-// To Do
-// function getSolverManifest(){
-//   var solverName = $('#solverPASSelection').find(':selected').val();
-//   $.ajax( {url: window.PASURL +solverName+ "/solve",
-//   type: "GET",
-//   contentType: 'application/json'
-// })
-// .done(function (res) {
-
-//      if (res['status'] === 'ok') {
-//          window.toastr.success('Plan found!');
-//      } else {
-//          window.toastr.error('Planning failed.');
-//      }
-//      console.log(res)
-
-//     //  showPlan(res);
-
-//  }).fail(function (res) {
-//      window.toastr.error('Error: Malformed URL?');
-//  });
-// }
+function getAllPlanner(){
+  $.ajax( {url: window.PASURL + "/package",
+  type: "GET",
+  contentType: 'application/json'
+})
+.done(function (res) {
+   var option=""
+    for (const package of res){
+        console.log(package);
+        option += "<option value=\"" + package["package_name"] + "\">" +package["name"] + "</option>\n";
+        
+    }
+    $('#solverPASSelection').append(option);
+ 
+ }).fail(function (res) {
+     window.toastr.error('Error: Could not get the package list');
+ });
+}
 
 
 
@@ -223,10 +217,11 @@ define(function () {
 
       if (!(window.PASSolverStyled)) {
         $('body').append(PAS_MODEL);
-
-
         window.PASSolverStyled = true;
       }
+
+
+      getAllPlanner();
 
     },
 
