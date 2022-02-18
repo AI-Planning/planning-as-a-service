@@ -9,50 +9,41 @@ var PAS_MODEL = `
         <h4 class="modal-title" style="display:inline" id="chooseFilesModalLabel">Compute plan</h4>
       </div>
       <div class="modal-body">
-        <form class="form-horizontal left" role="form">
+        <form class="form-horizontal" role="form">
           <div class="form-group">
             <label for="domainPASSelection" class="col-sm-4 control-label">Domain</label>
-            <div class="col-sm-8">
+            <div class="col-sm-5">
               <select id="domainPASSelection" class="form-control file-selection">
               </select>
             </div>
           </div>
           <div class="form-group">
             <label for="problemPASSelection" class="col-sm-4 control-label">Problem</label>
-            <div class="col-sm-8">
+            <div class="col-sm-5">
               <select id="problemPASSelection" class="form-control file-selection">
               </select>
             </div>
           </div>     
           <div class="form-group">
           <label for="solverPASSelection" class="col-sm-4 control-label">Solver</label>
-          <div class="col-sm-8">
+          <div class="col-sm-5">
             <select id="solverPASSelection" class="form-control file-selection">
             </select>
           </div>
-        </div>    
-        </form>
-
-        <button id="filesChosenButton" class="btn-lg btn-success" type="button" onclick="filesChosen()">Plan</button>
-    
-
-
-        <div class="form-group" style="display:inline-block">
-            
-
-
-        <div id="plannerURLInput" class="input-group">
-          <span class="input-group-addon" id="customPlannerLabel">Custom Planner URL</span>
-          <input id="plannerPASURL" type="text" class="form-control" aria-describedby="customPlannerLabel" placeholder="http://solver.planning.domains/solve">
-        </div>
+          </div> 
           
-      </div>
-      <br/>
+          <div id="parametersPAS">
+          </div>
+        </form>
+        </div>
+      <div class="modal-footer" >
 
-      <div class="modal-footer"  >
+      <div class="btn-toolbar">
+        <button id="filesChosenButton" class="btn-lg btn-success" type="button" onclick="filesChosen()">Plan</button>
         <button type="button" class="btn btn-default"  data-dismiss="modal">Cancel</button>
+        </div>
       </div>
-    </div>
+    
   </div>
 </div>
 `
@@ -64,12 +55,59 @@ function getAllPlanner(){
 })
 .done(function (res) {
    var option=""
+   window.PAS_PACKAGES=res;
     for (const package of res){
         console.log(package);
         option += "<option value=\"" + package["package_name"] + "\">" +package["name"] + "</option>\n";
         
     }
     $('#solverPASSelection').append(option);
+
+    // Store the current planner paramerters list
+    var activePackageName=$('#solverPASSelection').find(':selected').val();
+    for (const package of window.PAS_PACKAGES){
+      if (package["package_name"]==activePackageName){
+        var args=package["endpoint"]["services"]["solve"]["args"]
+        window.paramatersPAS=args
+      }
+    }
+
+    $('#solverPASSelection').on('change', function(e){
+      var packageName=this.value;
+      for (const package of window.PAS_PACKAGES){
+        if (package["package_name"]==packageName){
+          var args=package["endpoint"]["services"]["solve"]["args"]
+          window.paramatersPAS=args
+          var newElement="";
+          for(const parameter of args){
+                console.log(parameter);
+                if (parameter["name"] != "domain" && parameter["name"] != "problem"){
+                
+                
+                newElement+=' <div class="form-group">';
+                newElement+='<label for="'+parameter["name"]+'PAS" class="col-sm-4 control-label">'+parameter["name"]+'</label>';
+                newElement+='<div class="col-sm-5">';
+                newElement+='<input type="text" class="form-control" id="'+parameter["name"]+'PAS">';
+                newElement+='<small id="'+parameter["name"]+'HelpBlock" class="form-text text-muted">';
+                newElement+="Type: "+parameter["type"];
+                newElement+='</small>';
+                newElement+='</div> </div>' 
+                
+
+                }
+          }
+          $('#parametersPAS').html(newElement);
+
+        }
+      }
+
+
+      console.log(this.value,
+                  this.options[this.selectedIndex].value,
+                  $(this).find(":selected").val(),);
+    });
+
+
  
  }).fail(function (res) {
      window.toastr.error('Error: Could not get the package list');
@@ -78,9 +116,7 @@ function getAllPlanner(){
 
 
 
-function getPlan(taskID) {
-
-  var i = 1;                  //  set your counter to 1
+function getPlan(taskID,retryNum) {
 
   setTimeout(function () {   //  call a 3s setTimeout when the loop is called
     $.ajax({
@@ -90,6 +126,7 @@ function getPlan(taskID) {
       data: JSON.stringify({ "adaptor": "planning_editor_adaptor" })
     })
       .done(function (res) {
+        console.log(res);
 
         if (res['status'] === 'ok') {
           window.toastr.success('Plan is ready');
@@ -99,17 +136,23 @@ function getPlan(taskID) {
           showPlan(res)
         }
         else {
-          i++;
-          if (i < 3) {
-            getPlan(taskID);
+          
+          console.log(retryNum)
+          if (retryNum < 5) {
+            getPlan(taskID,retryNum+1);
+            window.toastr.info('Solving in progress, will check again in 5S');
+          }else{
+            window.toastr.error('Timeout');
+
           }
-          window.toastr.info('Solving in progress, will check again in 10S');
+          
         }
 
       }).fail(function (res) {
+        console.log(res);
         window.toastr.error('Error: Malformed URL? ' + window.PASURL + taskID);
       });
-  }, 11000)
+  }, 5000)
 }
 
 
@@ -120,6 +163,22 @@ function runPAS() {
   var solverName = $('#solverPASSelection').find(':selected').val();
   window.toastr.info('Running remote planner...');
 
+  var bodyData={}
+  bodyData["domain"]=domText
+  bodyData["problem"]=probText
+  
+  for (const parameter of window.paramatersPAS){
+    if (parameter["name"] != "domain" && parameter["name"] != "problem"){
+      var value=$('#'+parameter["name"]+"PAS").val();
+
+      if (parameter["type"]=="int"){
+        value=Number(value)
+      }
+      bodyData[parameter["name"]]=value;
+    }
+  }
+
+  console.log(bodyData)
   $('#chooseFilesPASModel').modal('toggle');
 
   // Send task to the solver
@@ -127,13 +186,15 @@ function runPAS() {
     url: window.PASURL + "/package/" + solverName + "/solve",
     type: "POST",
     contentType: 'application/json',
-    data: JSON.stringify({ "domain": domText, "problem": probText })
+    data: JSON.stringify(bodyData)
   })
     .done(function (res) {
       if ("result" in res) {
         window.toastr.success('Task Initiated!');
         // Check the plan result
-        getPlan(res["result"])
+        
+        getPlan(res["result"],0);
+        
       }
 
     }).fail(function (res) {

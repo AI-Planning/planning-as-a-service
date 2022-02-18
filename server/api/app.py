@@ -143,10 +143,9 @@ def get_available_package():
     for package in all_packages:
         all_packages[package]["package_name"]=package
     
-    # # print(package.get("endpoint", {}).get("services", {}))
+    # Return the manifest of installed package
     insterested_package=[all_packages[package] for package in all_packages if package in installed_package if "solve" in all_packages[package].get("endpoint", {}).get("services", {}) ]
-    # insterested_package=[package for package in PACKAGES if package in installed_package]
-    # insterested_package=[package for package in PACKAGES if package in installed_package if "solve" in package.get("endpoint", {}).get("services", {})]
+    
     return jsonify(insterested_package)
 
 
@@ -177,14 +176,17 @@ def get_documentation_service(package, service):
     else:
         return render_template('documentation.html', package_information='No package with that name.')
 
+
+# @limiter.limit("1/10second", error_message="Sorry, we're busy. Please try again after 10 seconds.")
 @app.route('/check/<string:task_id>', methods=['GET', 'POST'])
-@limiter.limit("1/10second", error_message="Sorry, we're busy. Please try again after 10 seconds.")
+@limiter.exempt
 def check_task(task_id: str) -> str:
     res = celery.AsyncResult(task_id)
     if res.state == states.PENDING:
         return {"status":res.state}
     else:
         #Get requst
+        
         if request.method == 'GET':
             return {"result":result}
         # Post request
@@ -197,7 +199,7 @@ def check_task(task_id: str) -> str:
                     transformed_result=adaptor.get_result(request_data["adaptor"],result=result,arguments=arguments,request_data=request_data)
                     return transformed_result
                 except:
-                    return "Adaptor not found", 400
+                    return "Adaptor Not Found",400
             else:
                 # Return the default result format
                 return {"result":result}

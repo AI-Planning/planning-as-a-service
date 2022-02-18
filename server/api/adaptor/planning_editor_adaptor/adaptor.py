@@ -28,14 +28,20 @@ class PlanningEditorAdaptor:
     def generate_error_result(self):
         pass
 
+
+
     def transform(self,**kwargs):
         raw_data=kwargs["result"]
 
         # When the solver could not solve the problem
-        if len(raw_data["stderr"])>0:
+        if len(raw_data["stderr"])>0 or raw_data["output"]=="":
             result = copy.deepcopy(TEMPLATE)
             result["status"]="error"
-            result["result"]["output"]=raw_data["stderr"]
+
+            if raw_data["stderr"]!="":
+                result["result"]["output"]=raw_data["stderr"]
+            else:
+                result["result"]["output"]=raw_data["stdout"]
             result["result"]["parse_status"]="error"
             return result
 
@@ -49,7 +55,7 @@ class PlanningEditorAdaptor:
                 # request data send to the check API. 
                 # request_data=kwargs["request_data"]
 
-                #todo deal with multiple plans
+                #If multiple plans generated, return the last one
                 domain_file=arguments["domain"]["value"]
                 for plan_name in raw_data["output"]:
                     actions=raw_data["output"][plan_name]
@@ -83,6 +89,7 @@ class PlanningEditorAdaptor:
                 return result
 
             # Then the adaptor could not parse the plan, generate one action with the plan text
+            # need test
             except Exception:
                 result = copy.deepcopy(TEMPLATE)
                 result["status"]="ok"
