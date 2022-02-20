@@ -130,7 +130,9 @@ function getPlan(taskID,retryNum) {
 
         if (res['status'] === 'ok') {
           window.toastr.success('Plan is ready');
-          showPlan(res)
+          for (plan of res["plans"]){
+            showPlan(plan)
+          }
         } else if (res['status'] === 'error') {
           window.toastr.error('Planning failed.');
           showPlan(res)

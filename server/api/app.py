@@ -188,6 +188,7 @@ def check_task(task_id: str) -> str:
         #Get requst
         
         if request.method == 'GET':
+            result,arguments=res.result
             return {"result":result}
         # Post request
         elif request.method == 'POST':
