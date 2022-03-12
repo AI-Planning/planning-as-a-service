@@ -2,7 +2,7 @@ import os
 import tempfile
 from flask import Flask
 from flask import url_for
-from flask import flash, Markup, render_template, request, redirect, send_file, make_response, jsonify, json
+from flask import flash, Markup, render_template, request, redirect, send_file, make_response, jsonify, json,abort
 from flask_uploads  import (UploadSet, configure_uploads, IMAGES,
                               UploadNotAllowed)
 from flask_limiter import Limiter
@@ -23,6 +23,8 @@ import celery.states as states
 from adaptor.adaptor import Adaptor
 from flask_cors import CORS
 
+from collections import OrderedDict
+from datetime import datetime
 
 app = Flask(__name__)
 # allow CORS for all domains on all routes
@@ -36,6 +38,11 @@ limiter = Limiter(
     default_limits=["1/10second"]
 )
 
+
+# For API limit checking
+block_dict={}
+recent_ip=[]
+cpuCount=os.cpu_count()
 
 # Load config.py info
 app.config.from_object("config")
@@ -93,7 +100,7 @@ def index():
 
 # Main execution route for running planutils packages
 @app.route('/package/<package>/<service>', methods=['GET', 'POST'])
-@limiter.limit("1/10second", error_message="Sorry, we're busy. Please try again after 10 seconds.")
+@limiter.exempt
 def runPackage(package, service):
     # Get request
     if request.method == 'GET':
@@ -105,6 +112,12 @@ def runPackage(package, service):
     
     # Post request
     elif request.method == 'POST':
+        print(datetime.now(),block_dict.get(request.remote_addr,0),flush=True)
+        if check_for_throttle(request.remote_addr):
+            abort(429, description="Sorry, we're busy. Please try again after 20 seconds.")
+        elif check_lock():
+            server_in_contention()
+
         # Called route with a package that isn't in Planutils
         if package not in PACKAGES:
             return jsonify({"Error":"That package does not exist"})
@@ -129,6 +142,9 @@ def runPackage(package, service):
         output_file = package_manifest['return']
         # Send task
         task = celery.send_task('tasks.run.package', args=[package, arguments, call, output_file], kwargs={})
+
+        # keep the IP and datetime of the tasks
+        recent_ip.append(request.remote_addr)
         return jsonify({"result":str(url_for('check_task', task_id=task.id, external=True))})
 
 
@@ -145,7 +161,6 @@ def get_available_package():
     
     # Return the manifest of installed package
     insterested_package=[all_packages[package] for package in all_packages if package in installed_package if "solve" in all_packages[package].get("endpoint", {}).get("services", {}) ]
-    
     return jsonify(insterested_package)
 
 
@@ -189,7 +204,7 @@ def check_task(task_id: str) -> str:
         
         if request.method == 'GET':
             result,arguments=res.result
-            return {"result":result}
+            return {"result":result,"status":"ok"}
         # Post request
         elif request.method == 'POST':
             request_data = request.get_json()
@@ -203,7 +218,7 @@ def check_task(task_id: str) -> str:
                     return "Adaptor Not Found",400
             else:
                 # Return the default result format
-                return {"result":result}
+                return {"result":result,"status":"ok"}
     
 # Returns all necessary arguments for a service in a package
 def get_arguments(request_data, package_manifest):
@@ -223,6 +238,31 @@ def get_arguments(request_data, package_manifest):
                 arguments[arg_name] = {"value":request_data[arg_name], "type":arg_type}
     return arguments
 
+def check_for_throttle(ip_address):
+    if ip_address not in block_dict:
+        return False
+    last_request_time=block_dict[ip_address]
+    seconds_delta=(datetime.now()-last_request_time).total_seconds()
+    return seconds_delta<20
 
+
+# The maximum number of threads for a worker is same as the CPU counts.
+def check_lock():
+    working_node = celery.control.inspect()
+    total_tasks=0
+    active_nodes=working_node.active()
+    for worker in active_nodes:
+        num_active_tasks=len(active_nodes[worker])
+        total_tasks+=num_active_tasks
+    # Make sure always one thread is available for new caller
+    if total_tasks >= cpuCount -1:
+        return True
+    else:
+        return False
+def server_in_contention():
+    for ip in recent_ip:
+        block_dict[ip]=datetime.now()
+    recent_ip.clear()
+    
 if __name__ == "__main__":
     app.run("0.0.0.0", port=5001, debug=True)
