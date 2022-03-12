@@ -48,75 +48,104 @@ var PAS_MODEL = `
 </div>
 `
 
-function getAllPlanner(){
-  $.ajax( {url: window.PASURL + "/package",
-  type: "GET",
-  contentType: 'application/json'
-})
-.done(function (res) {
-   var option=""
-   window.PAS_PACKAGES=res;
-    for (const package of res){
+function getAllPlanner() {
+  $.ajax({
+    url: window.PASURL + "/package",
+    type: "GET",
+    contentType: 'application/json'
+  })
+    .done(function (res) {
+      var option = ""
+      window.PAS_PACKAGES = res;
+      for (const package of res) {
         console.log(package);
-        option += "<option value=\"" + package["package_name"] + "\">" +package["name"] + "</option>\n";
-        
-    }
-    $('#solverPASSelection').append(option);
+        option += "<option value=\"" + package["package_name"] + "\">" + package["name"] + "</option>\n";
 
-    // Store the current planner paramerters list
-    var activePackageName=$('#solverPASSelection').find(':selected').val();
-    for (const package of window.PAS_PACKAGES){
-      if (package["package_name"]==activePackageName){
-        var args=package["endpoint"]["services"]["solve"]["args"]
-        window.paramatersPAS=args
       }
-    }
-
-    $('#solverPASSelection').on('change', function(e){
-      var packageName=this.value;
-      for (const package of window.PAS_PACKAGES){
-        if (package["package_name"]==packageName){
-          var args=package["endpoint"]["services"]["solve"]["args"]
-          window.paramatersPAS=args
-          var newElement="";
-          for(const parameter of args){
-                console.log(parameter);
-                if (parameter["name"] != "domain" && parameter["name"] != "problem"){
-                
-                
-                newElement+=' <div class="form-group">';
-                newElement+='<label for="'+parameter["name"]+'PAS" class="col-sm-4 control-label">'+parameter["name"]+'</label>';
-                newElement+='<div class="col-sm-5">';
-                newElement+='<input type="text" class="form-control" id="'+parameter["name"]+'PAS">';
-                newElement+='<small id="'+parameter["name"]+'HelpBlock" class="form-text text-muted">';
-                newElement+="Type: "+parameter["type"];
-                newElement+='</small>';
-                newElement+='</div> </div>' 
-                
-
-                }
-          }
-          $('#parametersPAS').html(newElement);
-
+      $('#solverPASSelection').append(option);
+      // Store the current planner paramerters list
+      var activePackageName = $('#solverPASSelection').find(':selected').val();
+      for (const package of window.PAS_PACKAGES) {
+        if (package["package_name"] == activePackageName) {
+          var args = package["endpoint"]["services"]["solve"]["args"]
+          window.paramatersPAS = args
         }
       }
 
+      $('#solverPASSelection').on('change', function (e) {
+        var packageName = this.value;
+        for (const package of window.PAS_PACKAGES) {
+          if (package["package_name"] == packageName) {
+            var args = package["endpoint"]["services"]["solve"]["args"]
+            window.paramatersPAS = args
+            var newElement = "";
+            for (const parameter of args) {
+              console.log(parameter);
+              if (parameter["name"] != "domain" && parameter["name"] != "problem") {
 
-      console.log(this.value,
-                  this.options[this.selectedIndex].value,
-                  $(this).find(":selected").val(),);
+                if (parameter["type"] != "categorical") {
+
+
+                  newElement += ' <div class="form-group">';
+                  newElement += '<label for="' + parameter["name"] + 'PAS" class="col-sm-4 control-label">' + parameter["name"] + '</label>';
+                  newElement += '<div class="col-sm-5">';
+                  if (parameter["default"]) {
+                    newElement += '<input type="text" class="form-control" id="' + parameter["name"] + 'PAS" value="' + parameter["default"] + '">';
+                  } else {
+                    newElement += '<input type="text" class="form-control" id="' + parameter["name"] + 'PAS">';
+                  }
+                  newElement += '<small id="' + parameter["name"] + 'HelpBlock" class="form-text text-muted">';
+                  newElement += "Type: " + parameter["type"];
+                  newElement += '</small>';
+                  newElement += '</div> </div>'
+
+
+                } else {
+
+                  newElement += ' <div class="form-group">';
+                  newElement += '<label for="' + parameter["name"] + 'PAS" class="col-sm-4 control-label">' + parameter["name"] + '</label>';
+                  newElement += '<div class="col-sm-5">';
+                  newElement += '<select id="' + parameter["name"] + 'PAS" class="form-control file-selection">';
+
+                  for (const item of parameter["choices"]) {
+                    var option;
+                    if (item["value"] == parameter["default"]) {
+                      option = "<option value=\"" + item["value"] + "\" selected>" + item["display_value"] + "</option>\n";
+                    } else {
+                      option = "<option value=\"" + item["value"] + "\">" + item["display_value"] + "</option>\n";
+                    }
+                    newElement += option
+                  }
+                  newElement += '</select>';
+
+                  newElement += '</div> </div>'
+
+                }
+
+
+              }
+            }
+            $('#parametersPAS').html(newElement);
+
+          }
+        }
+
+
+        console.log(this.value,
+          this.options[this.selectedIndex].value,
+          $(this).find(":selected").val());
+      });
+      $('#solverPASSelection').trigger("change");
+
+
+    }).fail(function (res) {
+      window.toastr.error('Error: Could not get the package list');
     });
-
-
- 
- }).fail(function (res) {
-     window.toastr.error('Error: Could not get the package list');
- });
 }
 
 
 
-function getPlan(taskID,retryNum) {
+function getPlan(taskID, retryNum) {
 
   setTimeout(function () {   //  call a 3s setTimeout when the loop is called
     $.ajax({
@@ -130,7 +159,7 @@ function getPlan(taskID,retryNum) {
 
         if (res['status'] === 'ok') {
           window.toastr.success('Plan is ready');
-          for (plan of res["plans"]){
+          for (plan of res["plans"]) {
             showPlan(plan)
           }
         } else if (res['status'] === 'error') {
@@ -138,16 +167,16 @@ function getPlan(taskID,retryNum) {
           showPlan(res)
         }
         else {
-          
+
           console.log(retryNum)
           if (retryNum < 5) {
-            getPlan(taskID,retryNum+1);
+            getPlan(taskID, retryNum + 1);
             window.toastr.info('Solving in progress, will check again in 5S');
-          }else{
+          } else {
             window.toastr.error('Timeout');
 
           }
-          
+
         }
 
       }).fail(function (res) {
@@ -165,18 +194,19 @@ function runPAS() {
   var solverName = $('#solverPASSelection').find(':selected').val();
   window.toastr.info('Running remote planner...');
 
-  var bodyData={}
-  bodyData["domain"]=domText
-  bodyData["problem"]=probText
-  
-  for (const parameter of window.paramatersPAS){
-    if (parameter["name"] != "domain" && parameter["name"] != "problem"){
-      var value=$('#'+parameter["name"]+"PAS").val();
+  var bodyData = {}
+  bodyData["domain"] = domText
+  bodyData["problem"] = probText
 
-      if (parameter["type"]=="int"){
-        value=Number(value)
+  for (const parameter of window.paramatersPAS) {
+    if (parameter["name"] != "domain" && parameter["name"] != "problem") {
+      var value = ""
+      if (parameter["type"] != "categorical") {
+        var value = $('#' + parameter["name"] + "PAS").val();
+      } else {
+        var value = $('#' + parameter["name"] + "PAS").find(':selected').val();
       }
-      bodyData[parameter["name"]]=value;
+      bodyData[parameter["name"]] = value;
     }
   }
 
@@ -194,9 +224,9 @@ function runPAS() {
       if ("result" in res) {
         window.toastr.success('Task Initiated!');
         // Check the plan result
-        
-        getPlan(res["result"],0);
-        
+
+        getPlan(res["result"], 0);
+
       }
 
     }).fail(function (res) {
