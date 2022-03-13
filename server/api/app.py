@@ -112,7 +112,6 @@ def runPackage(package, service):
     
     # Post request
     elif request.method == 'POST':
-        print(datetime.now(),block_dict.get(request.remote_addr,0),flush=True)
         if check_for_throttle(request.remote_addr):
             abort(429, description="Sorry, we're busy. Please try again after 20 seconds.")
         elif check_lock():
