@@ -229,8 +229,12 @@ function runPAS() {
 
       }
 
-    }).fail(function (res) {
-      window.toastr.error('Error: Malformed URL?');
+    }).fail(function (xhr) {
+      if(xhr.status==429) {
+        window.toastr.error('Server is busy, try again after 20 Seconds.');
+      }else{
+        window.toastr.error('Error: Malformed URL?');
+      }
     });
 
 }

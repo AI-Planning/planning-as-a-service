@@ -1,15 +1,16 @@
 # Ways to Run & Debug Server
 
+
 ## Docker Build & Launch
 
-Get sources
+1. Get sources
 
 ```bash
 git clone https://github.com/AI-Planning/planning-as-a-service
 cd planning-as-a-service/server
 ```
 
-Set up .env file:
+2. Create an .env file in the server folder:
 
 Please create a new environment file called .env, and set up the following variable. You can reference the provided `.env.example` file.
 
@@ -18,7 +19,7 @@ Please create a new environment file called .env, and set up the following varia
 * MAX_MEMORY_PER_CHILD=12000 # Max memory can be allocated a task
 * TIME_LIMIT=180 #Time limit per task
 
-Start Docker:
+3. Start Docker:
 
 ```bash
 docker-compose up -d --build
@@ -48,12 +49,16 @@ To change the endpoints, update the code in [api/app.py](api/app.py)
 
 Task changes should happen in [queue/tasks.py](celery-queue/tasks.py)
 
+## Compatibility Issues
+Please be aware that the current Singularity docker image is not compatible with the new Mac M1 CPU.
 
 
 ## API
 
 - Planning solver: [localhost:5001/solver/](http://localhost:5001/solver/)
 - Queue Monitor: [localhost:5555](http://localhost:5555)
+- Package API: `http://localhost:5001/package/{package_name}/{package_service}`
+- Manifest API: The required arguments for the POST request are defined in the Planutils package manifests, and can be easily viewed at: `http://localhost:5001/docs/{package_name}`
 
 ## Local Dev
 
@@ -106,16 +111,9 @@ code . &
 Go to the debug symbol add breakpoints and debug as shown below:
 ![image](https://github.com/AI-Planning/planning-as-a-service/blob/master/docs/videos/debug.gif)
 
-### Planutils 
-
-We can execute Planutils packages with the defined API
-
-`http://localhost:5001/package/{package_name}/{package_service}`
-
-The required arguments for the POST request are defined in the Planutils package manifests, and can be easily viewed at: 
-
-`http://localhost:5001/docs/{package_name}`
 ### Update Planutils on the server
+The following steps are required before the new docker file and CI/CD process developed. Currently, we have to manually update the planutils to the testing/latest version once the container is built.
+
 Once you have login to the Ubuntu server.
 
 1.List all the containers:

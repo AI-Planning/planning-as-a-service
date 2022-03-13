@@ -98,4 +98,4 @@ def run_package(package: str, arguments:dict, call:str, output_file:dict):
 
         return {"stdout":res.stdout, "stderr":res.stderr, "call":call, "output":output},arguments
     except SoftTimeLimitExceeded as e:
-        return {"stdout":"Request Time Out", "stderr":"", "call":call, "output":""},arguments
+        return {"stdout":"Request Time Out", "stderr":"", "call":call, "output":{}},arguments

@@ -77,15 +77,12 @@ class PlanningEditorAdaptor:
         raw_data=kwargs["result"]
 
         # When the solver could not solve the problem
-        if len(raw_data["stderr"])>0 or raw_data["output"]=="":
+        if len(raw_data["stderr"])>0 or raw_data["output"]=={}:
             result = copy.deepcopy(TEMPLATE)
             result["status"]="error"
-
-            if raw_data["stderr"]!="":
-                result["result"]["output"]=raw_data["stderr"]
-            else:
-                result["result"]["output"]=raw_data["stdout"]
-            result["result"]["parse_status"]="error"
+            result["result"]["output"]=""
+            result["result"]["error"]= "stderr: \n"+raw_data["stderr"]+"\nstdout: \n"+raw_data["stdout"]    
+            result["result"]["parse_status"]="err"
             return result
 
 
