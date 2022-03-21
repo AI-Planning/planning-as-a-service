@@ -58,7 +58,6 @@ function getAllPlanner() {
       var option = ""
       window.PAS_PACKAGES = res;
       for (const package of res) {
-        console.log(package);
         option += "<option value=\"" + package["package_name"] + "\">" + package["name"] + "</option>\n";
 
       }
@@ -80,7 +79,6 @@ function getAllPlanner() {
             window.paramatersPAS = args
             var newElement = "";
             for (const parameter of args) {
-              console.log(parameter);
               if (parameter["name"] != "domain" && parameter["name"] != "problem") {
 
                 if (parameter["type"] != "categorical") {
@@ -129,11 +127,6 @@ function getAllPlanner() {
 
           }
         }
-
-
-        console.log(this.value,
-          this.options[this.selectedIndex].value,
-          $(this).find(":selected").val());
       });
       $('#solverPASSelection').trigger("change");
 
@@ -155,7 +148,6 @@ function getPlan(taskID, retryNum) {
       data: JSON.stringify({ "adaptor": "planning_editor_adaptor" })
     })
       .done(function (res) {
-        console.log(res);
 
         if (res['status'] === 'ok') {
           window.toastr.success('Plan is ready');
@@ -168,10 +160,11 @@ function getPlan(taskID, retryNum) {
         }
         else {
 
-          console.log(retryNum)
-          if (retryNum < 5) {
+          if (retryNum < 20) {
             getPlan(taskID, retryNum + 1);
-            window.toastr.info('Solving in progress, will check again in 5S');
+            if (retryNum % 5 ==0){
+            window.toastr.info('Solving in progress');
+            }
           } else {
             window.toastr.error('Timeout');
 
@@ -180,10 +173,9 @@ function getPlan(taskID, retryNum) {
         }
 
       }).fail(function (res) {
-        console.log(res);
         window.toastr.error('Error: Malformed URL? ' + window.PASURL + taskID);
       });
-  }, 5000)
+  }, 1000)
 }
 
 
@@ -209,8 +201,6 @@ function runPAS() {
       bodyData[parameter["name"]] = value;
     }
   }
-
-  console.log(bodyData)
   $('#chooseFilesPASModel').modal('toggle');
 
   // Send task to the solver
