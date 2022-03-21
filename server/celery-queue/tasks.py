@@ -96,6 +96,8 @@ def run_package(package: str, arguments:dict, call:str, output_file:dict):
         
         output = retrieve_output_file(output_file, tmpfolder)
 
+        # Remove the files in temfolder when task is finished
+        shutil.rmtree(tmpfolder)
         return {"stdout":res.stdout, "stderr":res.stderr, "call":call, "output":output},arguments
     except SoftTimeLimitExceeded as e:
         return {"stdout":"Request Time Out", "stderr":"", "call":call, "output":{}},arguments
