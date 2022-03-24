@@ -54,6 +54,11 @@ configure_uploads(app, pddl_files)
 # 16 MB max size for PDDL files
 app.config['MAX_CONTENT_LENGTH'] = 16 * 1024 * 1024
 
+# For any unexpected error, this error message will return
+@app.errorhandler(500)
+def internal_error(error):
+    return "Error: This Planutils package is not configured correctly"
+
 # Solver API
 @app.route('/solver/', methods=['GET', 'POST'])
 def index():
@@ -117,7 +122,7 @@ def runPackage(package, service):
         if 'endpoint' not in PACKAGES[package]:
             return jsonify({"Error":"That package does not contain an API endpoint"})
 
-        if service not in PACKAGES[package]['endpoint']['services']:
+        if service not in PACKAGES[package]['endpoint'].get('services',{}):
             return jsonify({"Error":"That package does not contain service " + service})
         
         # Grabs the request data (JSON)
@@ -210,19 +215,24 @@ def check_task(task_id: str) -> str:
 def get_arguments(request_data, package_manifest):
     # Global package arguments
     arguments = {}    
-    # Service specific arguments
-    if "args" in package_manifest:
-        # We have extra args
-        for arg in package_manifest['args']:
-            # If argument_invalid is populated, we have an error
-            arg_name=arg['name']
-            arg_type=arg['type']
-            if arg_name not in request_data:
-                # Error: Required argument was not provided
-                return {"Error":"Required argument, " + arg_name + " was not provided"}
-            else:
-                arguments[arg_name] = {"value":request_data[arg_name], "type":arg_type}
-    return arguments
+
+    try:
+        # Service specific arguments
+        if "args" in package_manifest:
+            # We have extra args
+            for arg in package_manifest['args']:
+                # If argument_invalid is populated, we have an error
+                arg_name=arg['name']
+                arg_type=arg['type']
+                if arg_name not in request_data:
+                    # Error: Required argument was not provided
+                    return {"Error":"Required argument, " + arg_name + " was not provided"}
+                else:
+                    arguments[arg_name] = {"value":request_data[arg_name], "type":arg_type}
+        return arguments
+    except:
+        return {"Error: This Planutils package is not configured correctly"}
+    
 
 def check_for_throttle(ip_address):
     if ip_address not in block_dict:

@@ -1,8 +1,6 @@
 import os
 import sys
 sys.path.append(os.path.dirname(os.path.abspath(__file__)))
-
-import parser_functions
 from action_plan_parser.parser import Problem
 import copy
 import json
