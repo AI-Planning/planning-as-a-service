@@ -1,6 +1,6 @@
 # Stage 0: Build Celery worker
 
-FROM aiplanning/planutils:latest
+FROM planutils:latest 
 
 
 ENV CELERY_BROKER_URL redis://redis:6379/0
@@ -12,7 +12,6 @@ ENV PATH=$PATH:~/.planutils/bin
 COPY . /queue
 WORKDIR /queue
 
-# RUN planutils install -f lama-first
 
 
 RUN pip install -r requirements.txt

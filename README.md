@@ -22,16 +22,12 @@ Please create a new environment file called .env, and set up the following varia
 3. Start Docker:
 
 ```bash
-docker-compose up -d --build
+make
 ```
 
-or
+1. This will build the latest Planutils Image and install all the selected solvers. You can edit the Dockerfile to update the Planutils version and available solvers.
 
-```bash
-make build-start
-```
-
-This will expose the Flask application's endpoints on port `5001` as well as a [Flower](https://github.com/mher/flower) server for monitoring workers on port `5555`
+2. Then it will expose the Flask application's endpoints on port `5001` as well as a [Flower](https://github.com/mher/flower) server for monitoring workers on port `5555`
 
 To add more workers:
 
@@ -110,38 +106,6 @@ code . &
 
 Go to the debug symbol add breakpoints and debug as shown below:
 ![image](https://github.com/AI-Planning/planning-as-a-service/blob/master/docs/videos/debug.gif)
-
-### Update Planutils on the server
-The following steps are required before the new docker file and CI/CD process developed. Currently, we have to manually update the planutils to the testing/latest version once the container is built.
-
-Once you have login to the Ubuntu server.
-
-1.List all the containers:
-`
-sudo docker container ls -a
-`
-![image](https://github.com/AI-Planning/planning-as-a-service/blob/planutils-functionality/docs/videos/containers.png)
-
-2.We have to update planutils in the `server_worker` and `server_web` containers. You have to run commands 2.1 to 2.4 for both container.
-
-2.1 Use the following command to login to the container:
-`sudo docker exec -it containerID bash`
-
-2.2 In the container terminal, type the following command to update the latest planutils on the `manifest-new-version` branch.
-```
-git clone https://github.com/AI-Planning/planutils.git
-cd planutils
-git checkout manifest-new-version
-pip uninstall planutils
-python3 setup.py install --old-and-unmanageable
-planutils setup
-```
-2.3 Then install the planner using the following command:
-```
-planutils install plannername
-```
-
-2.4 Leave the container use `exit`
 
 
 ### Example use

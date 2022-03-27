@@ -6,6 +6,7 @@ import copy
 import json
 import re
 import traceback
+
 TEMPLATE={
     "status":"ok",
     "result":{
@@ -25,7 +26,6 @@ class PlanningEditorAdaptor:
 
     def generate_error_result(self):
         pass
-
 
     def handle_plan(self,domain_file,actions,stdout):
 
@@ -83,10 +83,10 @@ class PlanningEditorAdaptor:
             result["result"]["parse_status"]="err"
             return result
 
-
         else:
             # Orginal arguments data(input data defined in manifest) send to the worker
             arguments=kwargs["arguments"]
+            
             # request data send to the check API. 
             # request_data=kwargs["request_data"]
 
