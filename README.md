@@ -25,7 +25,7 @@ Please create a new environment file called .env, and set up the following varia
 make
 ```
 
-1. This will build the latest Planutils Image and install all the selected solvers. You can edit the Dockerfile to update the Planutils version and available solvers.
+1. This will build the latest Planutils Image and install all the selected solvers. You can edit the Dockerfile to update the available solvers.
 
 2. Then it will expose the Flask application's endpoints on port `5001` as well as a [Flower](https://github.com/mher/flower) server for monitoring workers on port `5555`
 
