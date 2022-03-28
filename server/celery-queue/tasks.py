@@ -5,14 +5,16 @@ import tempfile
 import requests
 import subprocess
 import json
+import glob
 
 from celery import Celery
 from planutils.package_installation import PACKAGES
-
+from celery.exceptions import SoftTimeLimitExceeded
 
 CELERY_BROKER_URL = os.environ.get('CELERY_BROKER_URL', 'redis://localhost:6379/0'),
 CELERY_RESULT_BACKEND = os.environ.get('CELERY_RESULT_BACKEND', 'redis://localhost:6379/0')
 WEB_DOCKER_URL = os.environ.get('WEB_DOCKER_URL', None)
+TIME_LIMIT=int(os.environ.get('TIME_LIMIT', 20))
 
 celery = Celery('tasks', broker=CELERY_BROKER_URL, backend=CELERY_RESULT_BACKEND)
 
@@ -21,11 +23,17 @@ def download_file( url: str, dst: str):
     with open(dst, 'wb') as f:
         f.write(r.content)
         
-def retrieve_output_file(target_file:str, folder):
-    with open(os.path.join(folder, target_file['file']), 'r') as f:
-        output = f.read()
-        if target_file['type'] == 'json':
-            output = json.loads(output)
+def retrieve_output_file(target_file:dict, folder):
+    file_pattern=os.path.join(folder, target_file["files"])
+    file_list=glob.glob(file_pattern)
+    output={}
+    for file in file_list:
+        file_name=os.path.basename(file)
+        with open(file, 'r') as f:
+            file_content = f.read()
+            if target_file['type'] == 'json':
+                file_content = json.loads(file_content)
+        output[file_name]=file_content
     return output
 
 def write_to_temp_file(name:str, data:str, folder:str):
@@ -59,32 +67,37 @@ def solve(domain_url: str, problem_url: str, solver: str) -> str:
     os.remove(domain_file)
     os.remove(problem_file)
     
-    plan = retrieve_output_file(PACKAGES[solver]['endpoint']['return']['file'], tmpfolder)
+    plan = retrieve_output_file(PACKAGES[solver]['endpoint']['services']['solve']['return']['file'], tmpfolder)
     
     shutil.rmtree(tmpfolder)
 
     return {'stdout': res.stdout, 'stderr': res.stderr, 'plan':plan}
 
 # Running generic planutils packages with no solver-specific assumptions
-@celery.task(name='tasks.run.package')
-def run_package(package: str, arguments:dict, call:str, output_file:str):
-    tmpfolder = tempfile.mkdtemp()
-    # Write files and replace args in the call string
-    for k, v in arguments.items():
-        if v['type'] == 'file':
-            # Need to write to a temp file
-            path_to_file = write_to_temp_file(k, v['value'], tmpfolder)
-            # k is a file, we want to replace with the file path
-            call = call.replace("{%s}" % k, k)
-        else:
-            # k needs to be replaced with the value 
-            call = call.replace("{%s}" % k, str(v['value']))
+@celery.task(name='tasks.run.package',soft_time_limit=TIME_LIMIT)
+def run_package(package: str, arguments:dict, call:str, output_file:dict):
+    try:
+        tmpfolder = tempfile.mkdtemp()
+        # Write files and replace args in the call string
+        for k, v in arguments.items():
+            if v['type'] == 'file':
+                # Need to write to a temp file
+                path_to_file = write_to_temp_file(k, v['value'], tmpfolder)
+                # k is a file, we want to replace with the file path
+                call = call.replace("{%s}" % k, k)
+            else:
+                # k needs to be replaced with the value 
+                call = call.replace("{%s}" % k, str(v['value']))
 
-    # Run the command
-    res = subprocess.run(call, stdout=subprocess.PIPE, stderr=subprocess.PIPE,
-                        executable='/bin/bash', encoding='utf-8',
-                        shell=True, cwd=tmpfolder)
-    
-    output = retrieve_output_file(output_file, tmpfolder)
+        # Run the command
+        res = subprocess.run(call, stdout=subprocess.PIPE, stderr=subprocess.PIPE,
+                            executable='/bin/bash', encoding='utf-8',
+                            shell=True, cwd=tmpfolder)
+        
+        output = retrieve_output_file(output_file, tmpfolder)
 
-    return {"stdout":res.stdout, "stderr":res.stderr, "call":call, "output":output}
+        # Remove the files in temfolder when task is finished
+        shutil.rmtree(tmpfolder)
+        return {"stdout":res.stdout, "stderr":res.stderr, "call":call, "output":output},arguments
+    except SoftTimeLimitExceeded as e:
+        return {"stdout":"Request Time Out", "stderr":"", "call":call, "output":{}},arguments
