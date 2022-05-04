@@ -231,7 +231,7 @@ def get_arguments(request_data, package_manifest):
                     arguments[arg_name] = {"value":request_data[arg_name], "type":arg_type}
         return arguments
     except:
-        return {"Error: This Planutils package is not configured correctly"}
+        return {"Error": "This Planutils package is not configured correctly"}
     
 
 def check_for_throttle(ip_address):
