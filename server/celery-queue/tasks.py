@@ -6,6 +6,7 @@ import requests
 import subprocess
 import json
 import glob
+import resource
 
 from celery import Celery
 from planutils.package_installation import PACKAGES
@@ -15,6 +16,8 @@ CELERY_BROKER_URL = os.environ.get('CELERY_BROKER_URL', 'redis://localhost:6379/
 CELERY_RESULT_BACKEND = os.environ.get('CELERY_RESULT_BACKEND', 'redis://localhost:6379/0')
 WEB_DOCKER_URL = os.environ.get('WEB_DOCKER_URL', None)
 TIME_LIMIT=int(os.environ.get('TIME_LIMIT', 20))
+# 30 MB Default
+TASK_MEMORY_LIMIT = int(os.environ.get('TASK_MEMORY_LIMIT', 30)) * 1024 * 1024 
 
 celery = Celery('tasks', broker=CELERY_BROKER_URL, backend=CELERY_RESULT_BACKEND)
 
@@ -41,6 +44,14 @@ def write_to_temp_file(name:str, data:str, folder:str):
     with open(path, 'w') as f:
         f.write(data)
     return path
+
+# Code copied from https://gist.github.com/s3rvac/f97d6cbdfdb15c0a32e7e941f7f4a3fa
+def limit_virtual_memory():
+    # The tuple below is of the form (soft limit, hard limit). Limit only
+    # the soft part so that the limit can be increased later (setting also
+    # the hard limit would prevent that).
+    # When the limit cannot be changed, setrlimit() raises ValueError.
+    resource.setrlimit(resource.RLIMIT_AS, (TASK_MEMORY_LIMIT, TASK_MEMORY_LIMIT))
 
 # Solve using downloaded flask files - not strings
 @celery.task(name='tasks.solve')
@@ -89,11 +100,12 @@ def run_package(package: str, arguments:dict, call:str, output_file:dict):
                 # k needs to be replaced with the value 
                 call = call.replace("{%s}" % k, str(v['value']))
 
-        # Run the command
         res = subprocess.run(call, stdout=subprocess.PIPE, stderr=subprocess.PIPE,
-                            executable='/bin/bash', encoding='utf-8',
-                            shell=True, cwd=tmpfolder)
-        
+                    executable='/bin/bash', encoding='utf-8',
+                    shell=True, cwd=tmpfolder,
+                    # preexec_fn is a callable object that will be called in the child process
+                    # just before the child is executed.
+                    preexec_fn=limit_virtual_memory)
         output = retrieve_output_file(output_file, tmpfolder)
 
         # Remove the files in temfolder when task is finished

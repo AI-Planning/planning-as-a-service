@@ -18,6 +18,7 @@ services:
       dockerfile: Dockerfile
     environment:
       - TIME_LIMIT=${TIME_LIMIT:-20}
+      - TASK_MEMORY_LIMIT=${TASK_MEMORY_LIMIT:-30}
     entrypoint: celery
     command: -A tasks worker --loglevel=info --max-memory-per-child=${MAX_MEMORY_PER_CHILD:-12000}
     depends_on:
