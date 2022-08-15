@@ -16,13 +16,16 @@ Please create a new environment file called .env, and set up the following varia
 
 * FLOWER_USERNAME=username #Flower Moinitor Username
 * FLOWER_PASSWORD=password #Flower Moinitor Password
-* MAX_MEMORY_PER_CHILD=12000 # Max memory can be allocated a task
-* TIME_LIMIT=180 #Time limit per task
+* MAX_MEMORY_PER_CHILD=12000 # Max memory(in Kib) can be allocated a task
+* TIME_LIMIT=20 #Time limit per task
 
-3. Start Docker:
+### Build the development environment using docker
 
 ```bash
-make
+# make sure you are in the server folder to run the makefile
+cd server
+
+make development
 ```
 
 1. This will build the latest Planutils Image and install all the selected solvers. You can edit the Dockerfile to update the available solvers.
@@ -40,10 +43,30 @@ To shut down:
 ```bash
 docker-compose down
 ```
-
 To change the endpoints, update the code in [api/app.py](api/app.py)
 
 Task changes should happen in [queue/tasks.py](celery-queue/tasks.py)
+
+### Server Deployment
+
+```bash
+# make sure you are in the server folder to run the makefile
+cd server
+
+# build/restart the application with default 12 celery workers. 
+make deploy
+
+# build/restart the application with 4 celery workers. 
+make deploy workers=4
+
+# pull the latest planutils from Dockerhub and restart the application
+make deploy-nocache
+
+# shutdown the whole services and delete all containers
+make shutdown
+
+```
+
 
 ## Compatibility Issues
 Please be aware that the current Singularity docker image is not compatible with the new Mac M1 CPU.

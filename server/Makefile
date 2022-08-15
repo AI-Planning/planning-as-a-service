@@ -1,19 +1,21 @@
-# 1. use make to build the stack first time
-all : build-planutils-image build-stack add-worker
+#default values
+workers ?=12 
 
-# 2. Use make rebuild when the planutils docker image is updated
-rebuild: build-planutils-image-nocache build-stack add-worker
+# 1. use make development to build/restart local development envinroment
+development : build-planutils-image build-stack
 
-# 3. restart the whole services
-restart: build-stack add-worker
+# 2. build/restart application
+deploy:build-planutils-image build-stack add-worker
 
-# 4. shutdown the whole services
+# 3. pull the latest planutils from Dockerhub and restart the application
+deploy-nocache: build-planutils-image-nocache build-stack add-worker
+
+# 4. shutdown the whole services and delete all containers
 shutdown:
 	docker-compose down
 
 build-planutils-image:
 	docker build -t planutils:latest .
-
 
 build-planutils-image-nocache:
 	docker build --no-cache -t planutils:latest .
@@ -23,5 +25,5 @@ build-stack:
 	docker-compose up -d --build 
 
 add-worker:
-	docker-compose up -d --scale worker=12 --no-recreate
+	docker-compose up -d --scale worker=$(workers) --no-recreate
 
