@@ -59,7 +59,7 @@ make deploy
 # build/restart the application with 4 celery workers. 
 make deploy workers=4
 
-# pull the latest planutils from Dockerhub and restart the application
+# pull the latest planutils from Dockerhub and restart the application with default 12 celery workers
 make deploy-nocache
 
 # shutdown the whole services and delete all containers
