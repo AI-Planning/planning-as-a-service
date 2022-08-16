@@ -19,7 +19,14 @@ services:
     environment:
       - TIME_LIMIT=${TIME_LIMIT:-20}
     entrypoint: celery
-    command: -A tasks worker --loglevel=info --max-memory-per-child=${MAX_MEMORY_PER_CHILD:-12000}
+    command: -A tasks worker --loglevel=info
+    restart: always
+    deploy:
+      mode: replicated
+      replicas: ${WORKER_NUMBERS:-1}
+      resources:
+        limits:
+          memory: ${MAX_MEMORY_PER_DOCKER_WORKER:-500M}
     depends_on:
       - redis
     
@@ -33,5 +40,6 @@ services:
     command:  -A tasks --port=5555 --broker=redis://redis:6379/0 --basic_auth=${FLOWER_USERNAME:-username}:${FLOWER_PASSWORD:-password}
     depends_on:
       - redis
+  
   redis:
     image: redis
