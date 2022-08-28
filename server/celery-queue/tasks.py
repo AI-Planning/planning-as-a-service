@@ -17,6 +17,8 @@ WEB_DOCKER_URL = os.environ.get('WEB_DOCKER_URL', None)
 TIME_LIMIT=int(os.environ.get('TIME_LIMIT', 20))
 
 celery = Celery('tasks', broker=CELERY_BROKER_URL, backend=CELERY_RESULT_BACKEND)
+celery.conf.update(result_extended=True)
+
 
 def download_file( url: str, dst: str):
     r = requests.get(url)
@@ -75,7 +77,7 @@ def solve(domain_url: str, problem_url: str, solver: str) -> str:
 
 # Running generic planutils packages with no solver-specific assumptions
 @celery.task(name='tasks.run.package',soft_time_limit=TIME_LIMIT)
-def run_package(package: str, arguments:dict, call:str, output_file:dict):
+def run_package(package: str, arguments:dict, call:str, output_file:dict,**kwargs):
     try:
         tmpfolder = tempfile.mkdtemp()
         # Write files and replace args in the call string
