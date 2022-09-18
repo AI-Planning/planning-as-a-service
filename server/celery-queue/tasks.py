@@ -8,6 +8,7 @@ import json
 import glob
 import time
 from db import MetaDB
+from functools import wraps
 
 from celery import Celery
 from planutils.package_installation import PACKAGES
@@ -20,6 +21,33 @@ TIME_LIMIT=int(os.environ.get('TIME_LIMIT', 20))
 celery = Celery('tasks', broker=CELERY_BROKER_URL, backend=CELERY_RESULT_BACKEND)
 celery.conf.update(result_extended=True)
 meta_db=MetaDB()
+
+
+def track_celery(method):
+    """
+    This decorator measures celery task meta data and store it in Mysql db.
+   
+    Usage:
+    Decorate your functions like this:
+    @track_celery
+    def my_long_running_and_mem_consuming_function():
+        ...
+    """
+    @wraps(method)
+    def measure_task(*args, **kwargs):
+        start_time_of_task = time.time()
+        result,arguments = method(*args, **kwargs)
+        end_time_of_task = time.time()
+        end_time_of_task - start_time_of_task
+        duration=(end_time_of_task - start_time_of_task) * 10**3
+        # Update the meta_data table, args[0] is the celery task object(self)
+        meta_db.add_meta_basic(args[0].request.id,"tasks.run.package",duration)
+        meta_db.add_meta_advanced(args[0].request.id,bytes(json.dumps(result), 'utf-8'))
+        return result,arguments
+
+    return measure_task
+
+
 
 
 def download_file( url: str, dst: str):
@@ -78,7 +106,9 @@ def solve(domain_url: str, problem_url: str, solver: str) -> str:
     return {'stdout': res.stdout, 'stderr': res.stderr, 'plan':plan}
 
 # Running generic planutils packages with no solver-specific assumptions
+
 @celery.task(name='tasks.run.package',soft_time_limit=TIME_LIMIT,bind=True)
+@track_celery
 def run_package(self, package: str, arguments:dict, call:str, output_file:dict,**kwargs):
 
  
@@ -95,26 +125,15 @@ def run_package(self, package: str, arguments:dict, call:str, output_file:dict,*
                 # k needs to be replaced with the value 
                 call = call.replace("{%s}" % k, str(v['value']))
 
-        # record start time
-        start = time.time()
         # Run the command
         res = subprocess.run(call, stdout=subprocess.PIPE, stderr=subprocess.PIPE,
                             executable='/bin/bash', encoding='utf-8',
                             shell=True, cwd=tmpfolder)
-        # record end time
-        end = time.time()
-        duration=(end-start) * 10**3
 
         output = retrieve_output_file(output_file, tmpfolder)
         # Remove the files in temfolder when task is finished
         shutil.rmtree(tmpfolder)
         result={"stdout":res.stdout, "stderr":res.stderr, "call":call, "output":output,"output_type":output_file["type"]}
-
-
-        # Update the meta_data table
-        meta_db.add_meta_basic(self.request.id,"tasks.run.package",duration)
-        meta_db.add_meta_advanced(self.request.id,bytes(json.dumps(result), 'utf-8'))
-
         return result,arguments
     except SoftTimeLimitExceeded as e:
         return {"stdout":"Request Time Out", "stderr":"", "call":call, "output":{},"output_type":output_file["type"]},arguments
