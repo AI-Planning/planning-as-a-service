@@ -6,6 +6,8 @@ import requests
 import subprocess
 import json
 import glob
+import time
+from db import MetaDB
 
 from celery import Celery
 from planutils.package_installation import PACKAGES
@@ -15,9 +17,9 @@ CELERY_BROKER_URL = os.environ.get('CELERY_BROKER_URL', 'redis://localhost:6379/
 CELERY_RESULT_BACKEND = os.environ.get('CELERY_RESULT_BACKEND', 'redis://localhost:6379/0')
 WEB_DOCKER_URL = os.environ.get('WEB_DOCKER_URL', None)
 TIME_LIMIT=int(os.environ.get('TIME_LIMIT', 20))
-
 celery = Celery('tasks', broker=CELERY_BROKER_URL, backend=CELERY_RESULT_BACKEND)
 celery.conf.update(result_extended=True)
+meta_db=MetaDB()
 
 
 def download_file( url: str, dst: str):
@@ -76,8 +78,10 @@ def solve(domain_url: str, problem_url: str, solver: str) -> str:
     return {'stdout': res.stdout, 'stderr': res.stderr, 'plan':plan}
 
 # Running generic planutils packages with no solver-specific assumptions
-@celery.task(name='tasks.run.package',soft_time_limit=TIME_LIMIT)
-def run_package(package: str, arguments:dict, call:str, output_file:dict,**kwargs):
+@celery.task(name='tasks.run.package',soft_time_limit=TIME_LIMIT,bind=True)
+def run_package(self, package: str, arguments:dict, call:str, output_file:dict,**kwargs):
+
+ 
     try:
         tmpfolder = tempfile.mkdtemp()
         # Write files and replace args in the call string
@@ -91,15 +95,26 @@ def run_package(package: str, arguments:dict, call:str, output_file:dict,**kwarg
                 # k needs to be replaced with the value 
                 call = call.replace("{%s}" % k, str(v['value']))
 
+        # record start time
+        start = time.time()
         # Run the command
         res = subprocess.run(call, stdout=subprocess.PIPE, stderr=subprocess.PIPE,
                             executable='/bin/bash', encoding='utf-8',
                             shell=True, cwd=tmpfolder)
-        
-        output = retrieve_output_file(output_file, tmpfolder)
+        # record end time
+        end = time.time()
+        duration=(end-start) * 10**3
 
+        output = retrieve_output_file(output_file, tmpfolder)
         # Remove the files in temfolder when task is finished
         shutil.rmtree(tmpfolder)
-        return {"stdout":res.stdout, "stderr":res.stderr, "call":call, "output":output,"output_type":output_file["type"]},arguments
+        result={"stdout":res.stdout, "stderr":res.stderr, "call":call, "output":output,"output_type":output_file["type"]}
+
+
+        # Update the meta_data table
+        meta_db.add_meta_basic(self.request.id,"tasks.run.package",duration)
+        meta_db.add_meta_advanced(self.request.id,bytes(json.dumps(result), 'utf-8'))
+
+        return result,arguments
     except SoftTimeLimitExceeded as e:
         return {"stdout":"Request Time Out", "stderr":"", "call":call, "output":{},"output_type":output_file["type"]},arguments
