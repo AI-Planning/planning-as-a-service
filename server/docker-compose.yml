@@ -18,6 +18,8 @@ services:
       dockerfile: Dockerfile
     environment:
       - TIME_LIMIT=${TIME_LIMIT:-20}
+      - MYSQL_USER=${MYSQL_USER:-user}
+      - MYSQL_PASSWORD=${MYSQL_PASSWORD:-password}
     entrypoint: celery
     command: -A tasks worker --loglevel=info
     restart: always
@@ -49,9 +51,9 @@ services:
     restart: always
     environment:
       MYSQL_DATABASE: 'db'
-      MYSQL_USER: 'user'
-      MYSQL_PASSWORD: 'password'
-      MYSQL_ROOT_PASSWORD: 'password'
+      MYSQL_USER: ${MYSQL_USER:-user}
+      MYSQL_PASSWORD:  ${MYSQL_PASSWORD:-password}
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD:-password}
     ports:
       - '3306:3306'
     volumes:

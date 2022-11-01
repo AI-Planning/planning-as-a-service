@@ -48,8 +48,6 @@ def track_celery(method):
     return measure_task
 
 
-
-
 def download_file( url: str, dst: str):
     r = requests.get(url)
     with open(dst, 'wb') as f:
@@ -74,36 +72,37 @@ def write_to_temp_file(name:str, data:str, folder:str):
         f.write(data)
     return path
 
-# Solve using downloaded flask files - not strings
-@celery.task(name='tasks.solve')
-def solve(domain_url: str, problem_url: str, solver: str) -> str:
-    tmpfolder = tempfile.mkdtemp()
+# The solve endpoint is replaced by the runpackage completely? So I have commented the following code.
+# # Solve using downloaded flask files - not strings
+# @celery.task(name='tasks.solve')
+# def solve(domain_url: str, problem_url: str, solver: str) -> str:
+#     tmpfolder = tempfile.mkdtemp()
 
-    if WEB_DOCKER_URL != None:
-        domain_url = domain_url.replace("localhost", WEB_DOCKER_URL)
-        problem_url = problem_url.replace("localhost", WEB_DOCKER_URL)
+#     if WEB_DOCKER_URL != None:
+#         domain_url = domain_url.replace("localhost", WEB_DOCKER_URL)
+#         problem_url = problem_url.replace("localhost", WEB_DOCKER_URL)
 
-    domain_file = f'{tmpfolder}/{os.path.basename(domain_url)}'
-    download_file(domain_url, domain_file)
+#     domain_file = f'{tmpfolder}/{os.path.basename(domain_url)}'
+#     download_file(domain_url, domain_file)
 
-    problem_file = f'{tmpfolder}/{os.path.basename(problem_url)}'
-    download_file(problem_url, problem_file)
+#     problem_file = f'{tmpfolder}/{os.path.basename(problem_url)}'
+#     download_file(problem_url, problem_file)
     
-    # Will generate a single output file (the plan) which is returned via HTTP
-    command = f"{solver} {domain_file} {problem_file}"
-    res = subprocess.run(command, stdout=subprocess.PIPE, stderr=subprocess.PIPE,
-                        executable='/bin/bash', encoding='utf-8',
-                        shell=True, cwd=tmpfolder)
+#     # Will generate a single output file (the plan) which is returned via HTTP
+#     command = f"{solver} {domain_file} {problem_file}"
+#     res = subprocess.run(command, stdout=subprocess.PIPE, stderr=subprocess.PIPE,
+#                         executable='/bin/bash', encoding='utf-8',
+#                         shell=True, cwd=tmpfolder)
 
-    # remove the tmp/fies once we finish
-    os.remove(domain_file)
-    os.remove(problem_file)
+#     # remove the tmp/fies once we finish
+#     os.remove(domain_file)
+#     os.remove(problem_file)
     
-    plan = retrieve_output_file(PACKAGES[solver]['endpoint']['services']['solve']['return']['file'], tmpfolder)
+#     plan = retrieve_output_file(PACKAGES[solver]['endpoint']['services']['solve']['return']['file'], tmpfolder)
     
-    shutil.rmtree(tmpfolder)
+#     shutil.rmtree(tmpfolder)
 
-    return {'stdout': res.stdout, 'stderr': res.stderr, 'plan':plan}
+#     return {'stdout': res.stdout, 'stderr': res.stderr, 'plan':plan}
 
 # Running generic planutils packages with no solver-specific assumptions
 
