@@ -22,6 +22,7 @@ Please create a new environment file called .env, and set up the following varia
 * MYSQL_USER=user #Metadata DB user
 * MYSQL_PASSWORD=password
 * MYSQL_ROOT_PASSWORD=password
+* CELERY_RESULT_EXPIRE=86400 #Time for when after stored task results will be deleted on Redis
 
 3. Start Docker:
 

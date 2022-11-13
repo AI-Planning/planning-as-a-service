@@ -18,8 +18,9 @@ services:
       dockerfile: Dockerfile
     environment:
       - TIME_LIMIT=${TIME_LIMIT:-20}
-      - MYSQL_USER=${MYSQL_USER:-user}
       - MYSQL_PASSWORD=${MYSQL_PASSWORD:-password}
+      - MYSQL_USER=${MYSQL_USER:-user}
+      - CELERY_RESULT_EXPIRE=${CELERY_RESULT_EXPIRE:-86400}
     entrypoint: celery
     command: -A tasks worker --loglevel=info
     restart: always

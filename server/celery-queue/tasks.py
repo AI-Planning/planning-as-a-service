@@ -16,10 +16,14 @@ from celery.exceptions import SoftTimeLimitExceeded
 
 CELERY_BROKER_URL = os.environ.get('CELERY_BROKER_URL', 'redis://localhost:6379/0'),
 CELERY_RESULT_BACKEND = os.environ.get('CELERY_RESULT_BACKEND', 'redis://localhost:6379/0')
+CELERY_RESULT_EXPIRE=os.environ.get('CELERY_RESULT_EXPIRE', 86400)
+
 WEB_DOCKER_URL = os.environ.get('WEB_DOCKER_URL', None)
 TIME_LIMIT=int(os.environ.get('TIME_LIMIT', 20))
 celery = Celery('tasks', broker=CELERY_BROKER_URL, backend=CELERY_RESULT_BACKEND)
 celery.conf.update(result_extended=True)
+# result_expires in seconds: https://docs.celeryq.dev/en/latest/userguide/configuration.html#result-expires
+celery.conf.update(result_expires=CELERY_RESULT_EXPIRE)
 meta_db=MetaDB()
 
 
