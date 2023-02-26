@@ -23,6 +23,7 @@ Please create a new environment file called .env, and set up the following varia
 * MYSQL_PASSWORD=password
 * MYSQL_ROOT_PASSWORD=password
 * CELERY_RESULT_EXPIRE=86400 #Time for when after stored task results will be deleted on Redis
+* FLOWER_MONITOR_MAX_TASKS=10000 # Maximum tasks log that will be kept on Flower
 
 3. Start Docker:
 
