@@ -40,7 +40,7 @@ services:
     ports:
      - "5555:5555"
     entrypoint: flower
-    command:  -A tasks --port=5555 --broker=redis://redis:6379/0 --basic_auth=${FLOWER_USERNAME:-username}:${FLOWER_PASSWORD:-password}
+    command:  -A tasks --port=5555 --broker=redis://redis:6379/0 --basic_auth=${FLOWER_USERNAME:-username}:${FLOWER_PASSWORD:-password} --max_tasks=${FLOWER_MONITOR_MAX_TASKS:-10000}
     depends_on:
       - redis
   
