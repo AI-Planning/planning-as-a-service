@@ -13,10 +13,11 @@ COPY . /api
 WORKDIR /api
 
 RUN apt-get update
-RUN apt-get install -y libmysqlclient-dev
+RUN apt-get install -y libmysqlclient-dev python3-dev build-essential
 
 # install requirements
-RUN pip install -r requirements.txt
+RUN python3 -m pip install --upgrade pip setuptools wheel
+RUN python3 -m pip install -r requirements.txt
 
 # expose the app port
 EXPOSE 5001
