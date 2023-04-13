@@ -120,7 +120,7 @@ Go to the debug symbol add breakpoints and debug as shown below:
 
 A simple python script to send a POST request to the lama-first planner, getting back stdout, stderr, and the generated plan:
 
-```
+```python
 import requests
 import time
 from pprint import pprint
@@ -130,22 +130,46 @@ req_body = {
 "problem":"(define (problem BLOCKS-4-0) (:domain BLOCKS) (:objects D B A C ) (:INIT (CLEAR C) (CLEAR A) (CLEAR B) (CLEAR D) (ONTABLE C) (ONTABLE A) (ONTABLE B) (ONTABLE D) (HANDEMPTY)) (:goal (AND (ON D C) (ON C B) (ON B A))) )"
 }
 
-solve_request=requests.post("http://localhost:5001/package/lama/solve", json=req_body).json()
-celery_result=requests.get('http://localhost:5001' + solve_request['result'])
+# Send job request to solve endpoint
+solve_request_url=requests.post("http://localhost:5001/package/lama/solve", json=req_body).json()
+
+# Query the result in the job
+celery_result=requests.post('http://localhost:5001' + solve_request_url['result'])
 
 print('Computing...')
 while celery_result.json().get("status","")== 'PENDING':
-    celery_result=requests.get('http://localhost:5001' + solve_request['result'])
+
+    # Query the result every 0.5 seconds while the job is executing
+    celery_result=requests.post('http://localhost:5001' + solve_request_url['result'])
     time.sleep(0.5)
 
 pprint(celery_result.json())
 ```
 
-This python code will run a test POST request on the lama-first solver, and return the link to access the result from the celery queue. In the meantime, the program 
+This python code will run a POST solve request on the lama-first solver, and return the link to access the result from the celery queue. In the meantime, the program 
 polls for the task to be completed, and prints out the returned json when it is. 
+
+If you want to use an [adaptor](https://github.com/AI-Planning/planning-as-a-service/blob/master/metadata-db/server/api/adaptor) to parse the returned plan files, you can specify the arguments when processing the job result:
+
+```python
+# Query the result in the job
+celery_result=requests.post('http://localhost:5001' + solve_request_url['result'], json={"adaptor":"planning_editor_adaptor"}  )
+```
 
 * Note: This script needs to be run in the same environment as the docker container
 
+## Adding new Planners
+
+Install a planner available in planutils by adding the installation line in the [worker dockerfile](https://github.com/AI-Planning/planning-as-a-service/blob/master/metadata-db/server/Dockerfile).
+
+```dockerfile
+RUN planutils install -f -y dual-bfws-ffparser
+```
+To learn how to setup a new planner in planutils, see the information in [planuitls github repo](https://github.com/AI-Planning/planutils#5-add-a-new-package)
+
+## Editor.Planning.Domains plugin
+
+If you want to edit the plugin exposing the service to the online editor, take a look at the [plugin codebase](https://github.com/AI-Planning/planning-as-a-service-plugin)
 
 ## Docker Flask Celery Redis
 
