@@ -169,7 +169,7 @@ To learn how to setup a new planner in planutils, see the information in [planui
 
 ## Editor.Planning.Domains plugin
 
-IF you want to edit the plugin exposing the service to the online editor, take a look at the [plugin codebase](https://github.com/AI-Planning/planning-as-a-service-plugin)
+If you want to edit the plugin exposing the service to the online editor, take a look at the [plugin codebase](https://github.com/AI-Planning/planning-as-a-service-plugin)
 
 ## Docker Flask Celery Redis
 
