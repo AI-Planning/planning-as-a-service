@@ -40,13 +40,13 @@ sudo make
 To add more workers:
 
 ```bash
-docker-compose up -d --scale worker=5 --no-recreate
+docker compose up -d --scale worker=5 --no-recreate
 ```
 
 To shut down:
 
 ```bash
-docker-compose down
+docker compose down
 ```
 To change the endpoints, update the code in [api/app.py](api/app.py)
 
