@@ -30,7 +30,7 @@ Please create a new environment file called .env, and set up the following varia
 ```bash
 # make sure you are in the server folder to run the makefile
 cd server
-make
+sudo make
 ```
 
 1. This will build the latest Planutils Image and install all the selected solvers. You can edit the Dockerfile to update the available solvers.
