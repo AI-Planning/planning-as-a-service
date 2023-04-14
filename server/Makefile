@@ -4,4 +4,4 @@ build-planutils-image:
 	docker build -t planutils:latest .
 
 build-start: # install and start
-	docker-compose up -d --build 
+	docker compose up -d --build 
