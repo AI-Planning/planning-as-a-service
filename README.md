@@ -22,7 +22,7 @@ Please create a new environment file called .env, and set up the following varia
 3. Start Docker:
 
 ```bash
-make
+sudo make
 ```
 
 1. This will build the latest Planutils Image and install all the selected solvers. You can edit the Dockerfile to update the available solvers.
