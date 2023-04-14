@@ -1,4 +1,10 @@
-# Ways to Run & Debug Server
+Planning as a service (PaaS) provides an extendable API to
+deploy planners online in local or cloud servers. The service
+provides a queue manager to control a set of workers, which
+can easily be extended with one of several planners available
+in PLANUTILS.
+
+# Getting Started
 
 
 ## Docker Build & Launch
