@@ -78,17 +78,17 @@ def index():
         # Called route with a package that isn't in Planutils
         if default_package not in PACKAGES:
             return jsonify({"Error":"{} is not installed".format(default_package)})
-        
+
         # Grabs the request data (JSON)
         request_data = request.get_json()
         # Contains manifest information
         package_manifest = PACKAGES[default_package]['endpoint']['services']["solve"]
-        
+
         # Get all necessary arguments for the service from request_data
         arguments = get_arguments(request_data, package_manifest)
         if 'Error' in arguments:
             return jsonify(arguments)
-            
+
         call = package_manifest['call']
         output_file = package_manifest['return']
         # Send task
@@ -108,7 +108,7 @@ def runPackage(package, service):
             return jsonify(PACKAGES[package])
         else:
             return jsonify({"Error":"That package does not exist"})
-    
+
     # Post request
     elif request.method == 'POST':
 
@@ -119,25 +119,25 @@ def runPackage(package, service):
         # Called route with a package that isn't in Planutils
         if package not in PACKAGES:
             return jsonify({"Error":"That package does not exist"})
-        
+
         if 'endpoint' not in PACKAGES[package]:
             return jsonify({"Error":"That package does not contain an API endpoint"})
 
         if service not in PACKAGES[package]['endpoint'].get('services',{}):
             return jsonify({"Error":"That package does not contain service " + service})
-        
-        
+ 
         persistent_value="true" if request.headers.get('persistent',"false") == "true" else "false"
+
         # Grabs the request data (JSON)
         request_data = request.get_json()
         # Contains manifest information
         package_manifest = PACKAGES[package]['endpoint']['services'][service]
-        
+
         # Get all necessary arguments for the service from request_data
         arguments = get_arguments(request_data, package_manifest)
         if 'Error' in arguments:
             return jsonify(arguments)
-            
+
         call = package_manifest['call']
         output_file = package_manifest['return']
         # Send task
@@ -156,9 +156,9 @@ def get_available_package():
     installed_package=settings.load()['installed']
     for package in all_packages:
         all_packages[package]["package_name"]=package
-    
+
     # Return the manifest of installed package
-    insterested_package=[all_packages[package] for package in all_packages if package in installed_package if "solve" in all_packages[package].get("endpoint", {}).get("services", {}) ]
+    insterested_package={package: all_packages[package] for package in all_packages if package in installed_package if "solve" in all_packages[package].get("endpoint", {}).get("services", {})}
     return jsonify(insterested_package)
 
 
@@ -174,7 +174,7 @@ def get_documentation(package):
         return render_template('documentation.html', package_information=package_data)
     else:
         return render_template('documentation.html', package_information='No package with that name.')
-    
+
 @app.route('/docs/<package>/<service>')
 def get_documentation_service(package, service):
     if package in PACKAGES:
@@ -195,7 +195,7 @@ def check_task(task_id: str) -> str:
         return {"status":res.state}
     else:
         #Get requst
-        
+
         if request.method == 'GET':
             result,arguments=res.result
             return {"result":result,"status":"ok"}
@@ -213,11 +213,11 @@ def check_task(task_id: str) -> str:
             else:
                 # Return the default result format
                 return {"result":result,"status":"ok"}
-    
+
 # Returns all necessary arguments for a service in a package
 def get_arguments(request_data, package_manifest):
     # Global package arguments
-    arguments = {}    
+    arguments = {}
 
     try:
         # Service specific arguments
@@ -234,8 +234,8 @@ def get_arguments(request_data, package_manifest):
                     arguments[arg_name] = {"value":request_data[arg_name], "type":arg_type}
         return arguments
     except:
-        return {"Error: This Planutils package is not configured correctly"}
-    
+        return {"Error": "This Planutils package is not configured correctly"}
+
 
 def check_for_throttle(ip_address):
     if ip_address not in block_dict:
@@ -258,7 +258,7 @@ def check_lock():
         return True
     else:
         return False
-        
-    
+
+
 if __name__ == "__main__":
     app.run("0.0.0.0", port=5001, debug=True)
