@@ -111,6 +111,7 @@ def runPackage(package, service):
 
     # Post request
     elif request.method == 'POST':
+
         if check_lock():
             if check_for_throttle(request.remote_addr):
                 abort(429, description="Sorry, we're busy. Please try again after {} seconds.".format(LIMITER_SECONDS))
@@ -124,6 +125,8 @@ def runPackage(package, service):
 
         if service not in PACKAGES[package]['endpoint'].get('services',{}):
             return jsonify({"Error":"That package does not contain service " + service})
+ 
+        persistent_value="true" if request.headers.get('persistent',"false") == "true" else "false"
 
         # Grabs the request data (JSON)
         request_data = request.get_json()
@@ -138,7 +141,7 @@ def runPackage(package, service):
         call = package_manifest['call']
         output_file = package_manifest['return']
         # Send task
-        task = celery.send_task('tasks.run.package', args=[package, arguments, call, output_file], kwargs={})
+        task = celery.send_task('tasks.run.package', args=[package, arguments, call, output_file], kwargs={"persistent":persistent_value})
 
         # keep the IP and datetime of the tasks
         block_dict[request.remote_addr]=datetime.now()
