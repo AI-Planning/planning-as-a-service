@@ -16,9 +16,9 @@ Please create a new environment file called .env, and set up the following varia
 
 * FLOWER_USERNAME=username #Flower Moinitor Username
 * FLOWER_PASSWORD=password #Flower Moinitor Password
-* MAX_MEMORY_PER_DOCKER_WORKER=500M #Max memory(in Kib) each Celery worker/container can consume
-* WORKER_NUMBERS=5 #Number of Celery worker/containers
-* TIME_LIMIT=20 #Time limit per celery task in seconds
+* MAX_MEMORY_PER_DOCKER_WORKER=4096M #Max memory each Celery worker/container can consume
+* WORKER_NUMBERS=12 #Number of Celery worker/containers
+* TIME_LIMIT=30 #Time limit per celery task in seconds
 * MYSQL_USER=user #Metadata DB user
 * MYSQL_PASSWORD=password
 * MYSQL_ROOT_PASSWORD=password
