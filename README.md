@@ -1,5 +1,4 @@
-Planning as a service (PaaS) provides an extendable API to
-deploy planners online in local or cloud servers. The service
+![logo100](https://github.com/AI-Planning/planning-as-a-service/assets/861782/90f1a948-d5dd-4092-8cb1-2065abe6cfb7) Planning as a service (PaaS) provides an extendable API to deploy planners online in local or cloud servers. The service
 provides a queue manager to control a set of workers, which
 can easily be extended with one of several planners available
 in PLANUTILS.
