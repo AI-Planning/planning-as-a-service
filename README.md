@@ -154,7 +154,7 @@ pprint(celery_result.json())
 This python code will run a POST solve request on the lama-first solver, and return the link to access the result from the celery queue. In the meantime, the program 
 polls for the task to be completed, and prints out the returned json when it is. 
 
-If you want to use an [adaptor](https://github.com/AI-Planning/planning-as-a-service/blob/master/metadata-db/server/api/adaptor) to parse the returned plan files, you can specify the arguments when processing the job result:
+If you want to use an [adaptor](https://github.com/AI-Planning/planning-as-a-service/blob/master/server/api/adaptor) to parse the returned plan files, you can specify the arguments when processing the job result:
 
 ```python
 # Query the result in the job
@@ -165,7 +165,7 @@ celery_result=requests.post('http://localhost:5001' + solve_request_url['result'
 
 ## Adding new Planners
 
-Install a planner available in planutils by adding the installation line in the [worker dockerfile](https://github.com/AI-Planning/planning-as-a-service/blob/master/metadata-db/server/Dockerfile).
+Install a planner available in planutils by adding the installation line in the [worker dockerfile](https://github.com/AI-Planning/planning-as-a-service/blob/master/server/Dockerfile).
 
 ```dockerfile
 RUN planutils install -f -y dual-bfws-ffparser
