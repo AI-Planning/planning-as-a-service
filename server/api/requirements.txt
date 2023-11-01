@@ -23,3 +23,5 @@ tornado==6.0.4
 urllib3==1.25.9
 vine==1.3.0
 Werkzeug==0.16.1
+Flask-SQLAlchemy==2.5.1
+mysqlclient==2.1.1
