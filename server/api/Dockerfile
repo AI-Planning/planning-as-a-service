@@ -19,5 +19,8 @@ EXPOSE 5001
 
 RUN pip install gunicorn
 
-# # run the app server
+# # run the app server. If you need https, use the command below instead.
 CMD ["gunicorn", "--bind", "0.0.0.0:5001", "--workers", "3", "app:app"]
+
+# # run the app server with https. Pem files need to be in the same folder of this Dockerfile. 
+# # CMD ["gunicorn", "--bind", "0.0.0.0:5001", "--workers", "3", "--certfile","fullchain.pem", "--keyfile", "privkey.pem", "app:app"]

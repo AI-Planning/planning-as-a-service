@@ -1,4 +1,4 @@
-version: "3"
+version: "3.2"
 services:
   web:
     privileged: true
@@ -17,9 +17,19 @@ services:
       context: celery-queue
       dockerfile: Dockerfile
     environment:
-      - TIME_LIMIT=${TIME_LIMIT}
+      - TIME_LIMIT=${TIME_LIMIT:-20}
+      - MYSQL_PASSWORD=${MYSQL_PASSWORD:-password}
+      - MYSQL_USER=${MYSQL_USER:-user}
+      - CELERY_RESULT_EXPIRE=${CELERY_RESULT_EXPIRE:-86400}
     entrypoint: celery
-    command: -A tasks worker --loglevel=info --max-memory-per-child=${MAX_MEMORY_PER_CHILD}
+    command: -A tasks worker --loglevel=info
+    restart: always
+    deploy:
+      mode: replicated
+      replicas: ${WORKER_NUMBERS:-1}
+      resources:
+        limits:
+          memory: ${MAX_MEMORY_PER_DOCKER_WORKER:-500M}
     depends_on:
       - redis
     
@@ -30,8 +40,22 @@ services:
     ports:
      - "5555:5555"
     entrypoint: flower
-    command:  -A tasks --port=5555 --broker=redis://redis:6379/0 --basic_auth=${FLOWER_USERNAME}:${FLOWER_PASSWORD}
+    command:  -A tasks --port=5555 --broker=redis://redis:6379/0 --basic_auth=${FLOWER_USERNAME:-username}:${FLOWER_PASSWORD:-password} --max_tasks=${FLOWER_MONITOR_MAX_TASKS:-10000}
     depends_on:
       - redis
+  
   redis:
     image: redis
+
+  mysql:
+    image: mysql:8.0
+    restart: always
+    environment:
+      MYSQL_DATABASE: 'db'
+      MYSQL_USER: ${MYSQL_USER:-user}
+      MYSQL_PASSWORD:  ${MYSQL_PASSWORD:-password}
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD:-password}
+    ports:
+      - '3306:3306'
+    volumes:
+      - ./init:/docker-entrypoint-initdb.d
