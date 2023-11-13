@@ -36,20 +36,24 @@ class MetaAdvanced(Base):
 
 class MetaDB:
     def __init__(self):
-        self.engine = create_engine(f'mysql://{MYSQL_USER}:{MYSQL_PASSWORD}@mysql:3306/db')
-        self.Session = sessionmaker(bind=self.engine)
+        self.engine = create_engine(f'mysql://{MYSQL_USER}:{MYSQL_PASSWORD}@mysql:3306/db', pool_recycle=500)
+        
 
     def add_meta_basic(self,task_id,name,duration):
-        with self.Session.begin() as session:
+        Session = sessionmaker(bind=self.engine)
+        with Session.begin() as session:
             meta_basic_record = MetaBasic(task_id=task_id, name=name, duration=duration)
             session.add(meta_basic_record)
             session.commit()
+            session.close()
 
     def add_meta_advanced(self,task_id,result):
-        with self.Session.begin() as session:
+        Session = sessionmaker(bind=self.engine)
+        with Session.begin() as session:
             meta_advanced_record = MetaAdvanced(task_id=task_id, result=result)
             session.add(meta_advanced_record)
             session.commit()
+            session.close()
 
 
 
