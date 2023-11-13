@@ -43,7 +43,7 @@ def track_celery(method):
         result,arguments = method(*args, **kwargs)
         end_time_of_task = time.time()
         end_time_of_task - start_time_of_task
-        duration=(end_time_of_task - start_time_of_task) * 10**3
+        duration=(end_time_of_task - start_time_of_task)
         # Update the meta_data table, args[0] is the celery task object(self)
         meta_db.add_meta_basic(args[0].request.id,"tasks.run.package",duration)
         meta_db.add_meta_advanced(args[0].request.id,bytes(json.dumps(result), 'utf-8'))

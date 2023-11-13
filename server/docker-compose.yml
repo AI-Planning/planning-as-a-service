@@ -50,6 +50,7 @@ services:
   mysql:
     image: mysql:8.0
     restart: always
+    command: --wait_timeout=600 --max_connections=2048
     environment:
       MYSQL_DATABASE: 'db'
       MYSQL_USER: ${MYSQL_USER:-user}
