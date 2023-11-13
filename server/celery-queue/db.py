@@ -40,16 +40,16 @@ class MetaDB:
         self.Session = sessionmaker(bind=self.engine)
 
     def add_meta_basic(self,task_id,name,duration):
-        session=self.Session()
-        meta_basic_record = MetaBasic(task_id=task_id, name=name, duration=duration)
-        session.add(meta_basic_record)
-        session.commit()
+        with self.Session.begin() as session:
+            meta_basic_record = MetaBasic(task_id=task_id, name=name, duration=duration)
+            session.add(meta_basic_record)
+            session.commit()
 
     def add_meta_advanced(self,task_id,result):
-        session=self.Session()
-        meta_advanced_record = MetaAdvanced(task_id=task_id, result=result)
-        session.add(meta_advanced_record)
-        session.commit()
+        with self.Session.begin() as session:
+            meta_advanced_record = MetaAdvanced(task_id=task_id, result=result)
+            session.add(meta_advanced_record)
+            session.commit()
 
 
 
