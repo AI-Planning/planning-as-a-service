@@ -60,7 +60,7 @@ class PlanningEditorAdaptor:
                             a_params=elements[1:]
                         else:
                             a_params=False
-                                                                                                     
+
                         if a_name in act_map:
                             a = act_map[a_name]
                             plan.append({"name": action_str, "action": a.export(grounding=a_params)})      
@@ -80,7 +80,7 @@ class PlanningEditorAdaptor:
         raw_data=kwargs["result"]
 
         # When the solver could not solve the problem
-        if raw_data["output"]=={}:
+        if raw_data["stderr"] != '':
             result = copy.deepcopy(TEMPLATE)
             result["status"]="error"
             result["result"]["output"]=""
