@@ -51,7 +51,8 @@ class PlanningEditorAdaptor:
                     act_map = {}
                     for a in domain.actions:
                         act_map[a.name] = a
-                    action_list=re.findall(r"(\([a-z -]*\))", actions)
+                    action_list=re.findall(r"(\([a-z\d -]*\))", actions)
+
                     for action_str in action_list:
                         elements=[element for element in action_str[1:-1].split(" ") if len(element)>0]
                         a_name=elements[0]
@@ -59,7 +60,7 @@ class PlanningEditorAdaptor:
                             a_params=elements[1:]
                         else:
                             a_params=False
-                        
+                                                                                                     
                         if a_name in act_map:
                             a = act_map[a_name]
                             plan.append({"name": action_str, "action": a.export(grounding=a_params)})      
