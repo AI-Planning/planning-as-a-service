@@ -2,6 +2,9 @@
 ### Example user template template
 ### Example user template
 
+## Mysql bind data folder
+server/db_data/ 
+
 # IntelliJ project files
 .idea
 *.iml
