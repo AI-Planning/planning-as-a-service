@@ -10,6 +10,9 @@ services:
      - "5001:5001"
     depends_on:
       - redis
+    # Uncomment below if you need to run it with SSL certificate, and edit api/Dockerfile gunicorn command  
+    # volumes:
+    #   - /etc/letsencrypt:/etc/letsencrypt
 
   worker:
     privileged: true

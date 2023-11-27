@@ -28,4 +28,4 @@ RUN pip install gunicorn
 CMD ["gunicorn", "--bind", "0.0.0.0:5001", "--workers", "3", "app:app"]
 
 # # run the app server with https. 
-# # CMD ["gunicorn", "--bind", "0.0.0.0:5001", "--workers", "3", "--certfile", "fullchain.pem", "--keyfile", "privkey.pem", "app:app"]
+# # CMD ["gunicorn", "--bind", "0.0.0.0:5001", "--workers", "3", "--certfile", "/etc/letsencrypt/live/paas-uom.org/fullchain.pem", "--keyfile", "/etc/letsencrypt/live/paas-uom.org/privkey.pem", "app:app"]
