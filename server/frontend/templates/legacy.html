@@ -1,0 +1,471 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="description" content="">
+    <meta name="author" content="">
+
+    <title>solver.planning.domains</title>
+
+    <!-- Fonts -->
+    <link href='http://fonts.googleapis.com/css?family=Vollkorn:400italic,400' rel='stylesheet' type='text/css'>
+
+	<!-- Bootstrap Core CSS -->
+  <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.4/css/bootstrap.min.css">
+
+  <!-- Custom CSS -->
+  <link href="css/scrolling-nav.css" rel="stylesheet">
+
+  <!-- HTML5 Shim and Respond.js IE8 support of HTML5 elements and media queries -->
+  <!-- WARNING: Respond.js doesn't work if you view the page via file:// -->
+  <!--[if lt IE 9]>
+      <script src="https://oss.maxcdn.com/libs/html5shiv/3.7.0/html5shiv.js"></script>
+      <script src="https://oss.maxcdn.com/libs/respond.js/1.4.2/respond.min.js"></script>
+  <![endif]-->
+
+</head>
+
+<!-- The #page-top ID is part of the scrolling feature - the data-spy and data-target are part of the built-in Bootstrap scrollspy function -->
+
+<body id="page-top" data-spy="scroll" data-target=".navbar-fixed-top">
+
+    <!-- Navigation -->
+    <nav class="navbar navbar-default navbar-fixed-top" role="navigation">
+        <div class="container">
+            <div class="navbar-header page-scroll">
+                <button type="button" class="navbar-toggle" data-toggle="collapse" data-target=".navbar-ex1-collapse">
+                    <span class="sr-only">Toggle navigation</span>
+                    <span class="icon-bar"></span>
+                    <span class="icon-bar"></span>
+                    <span class="icon-bar"></span>
+                </button>
+                <a class="navbar-brand page-scroll" href="#page-top">Home</a>
+            </div>
+
+            <!-- Collect the nav links, forms, and other content for toggling -->
+            <div class="collapse navbar-collapse navbar-ex1-collapse">
+                <ul class="nav navbar-nav">
+                    <!-- Hidden li included to remove active class from about link when scrolled up past about section -->
+                    <li class="hidden">
+                        <a class="page-scroll" href="#page-top"></a>
+                    </li>
+                    <li>
+                        <a class="page-scroll" href="#solver">Online Solver</a>
+                    </li>
+                    <li>
+                        <a class="page-scroll" href="#project">Open Source Project</a>
+                    </li>
+                    <li>
+                        <a class="page-scroll" href="#contest">Ultra-Agile Contest</a>
+                    </li>
+                </ul>
+                <ul class="nav navbar-nav navbar-right">
+                    <li><a href="http://planning.domains/">planning.domains</a></li>
+                </ul>
+            </div>
+            <!-- /.navbar-collapse -->
+        </div>
+        <!-- /.container -->
+    </nav>
+
+    <!-- Intro Section -->
+    <section id="intro" class="intro-section">
+        <div class="container">
+            <div class="row">
+                <div class="col-lg-12">
+
+                    <div id="api-warning"></div>
+
+                    <h1 class="site-title">Solver.Planning.Domains</h1>
+                     <p class="site-description">An automated planner in the cloud.</p>
+
+                     <div class="row site-components">
+
+                        <div class="col-md-3">
+                            <a id="far-left" target="_blank" href="http://planning.domains/">planning.domains<span class="glyphicon glyphicon-share"></span></a> <p>:</p>
+                        </div>
+
+                        <div class="col-md-3">
+                            <a target="_blank" href="http://api.planning.domains/">1) api.planning.domains<span class="glyphicon glyphicon-share"></span></a>
+                        </div>
+
+                        <div class="col-md-3">
+                            <a target="_blank" id="current-page" href="http://solver.planning.domains/">2) solver.planning.domains</a>
+                        </div>
+
+                        <div class="col-md-3"></div>
+
+                    </div>
+
+                    <div class="row site-components">
+
+                        <div class="col-md-3"></div>
+
+                        <div class="col-md-3">
+                            <a target="_blank" href="http://editor.planning.domains/">3) editor.planning.domains<span class="glyphicon glyphicon-share"></span></a>
+                        </div>
+
+                        <div class="col-md-3">
+                            <a target="_blank" href="http://education.planning.domains/">4) education.planning.domains<span class="glyphicon glyphicon-share"></span></a>
+                        </div>
+
+                        <div class="col-md-3"></div>
+
+                    </div>
+
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- About Section -->
+    <section id="solver" class="solver-section">
+
+        <div class="container">
+
+            <div class="row">
+
+                <div class="col-md-12">
+
+                    <h1>PDDL Solver</h1>
+
+                </div>
+
+            </div>
+
+            <div class="row">
+
+                <div class="col-md-6" name="solver">
+
+                    <h2>Solver as a Service</h2>
+
+                    <p>The solver component of <a href="http://planning.domains/">planning.domains</a> is an automated planner and validator in the cloud.
+                    You can invoke the software either by sending links to the PDDL files or sending raw PDDL content in JSON format directly to retrieve
+                    or validate a plan.</p>
+
+                    <h2>Sending PDDL URLs</h2>
+
+                    <p>Primarily, this functionality demonstrates how to use the remote planner, and is used for debugging
+                    the output that may be provided when it fails to find a solution. As examples, see
+                    <a href="http://solver.planning.domains/solve?domain=http://www.haz.ca/planning-domains/classical/blocks/domain.pddl&problem=http://www.haz.ca/planning-domains/classical/blocks/probBLOCKS-4-1.pddl">
+                    how to solve a simple blocksworld problem</a> (a valid plan should be shown), and see
+                    <a href="http://solver.planning.domains/solve?domain=http://www.haz.ca/planning-domains/classical/blocks/domain.pddl&problem=http://www.haz.ca/planning-domains/classical/logistics00/probLOGISTICS-4-2.pddl">
+                    what happens when you feed the planner mismatched problems</a> (the planners error log should be shown).</p>
+
+                    <h2>Sending PDDL Directly</h2>
+                    <p>A JSON <code>POST</code> request to the solver and/or validator can be used to retrieve or validate a plan, and extra
+                    information will be returned as well. For now, this is just the ground action schema corresponding to each
+                    action in the plan computed, and the computed solution cost from the validator. More information may be added
+                    in the future, depending on the general interest of those using the service. The following API endpoints are available:</p>
+
+                    <div class="endpoint">
+                      <span class="ep-type">POST</span> <span class="ep-base">solver.planning.domains/</span><span class="ep-path">solve</span>
+                    </div>
+
+                    <br />
+
+                    <div class="endpoint">
+                      <span class="ep-type">POST</span> <span class="ep-base">solver.planning.domains/</span><span class="ep-path">validate</span>
+                    </div>
+
+                    <br />
+
+                    <div class="endpoint">
+                      <span class="ep-type">POST</span> <span class="ep-base">solver.planning.domains/</span><span class="ep-path">solve-and-validate</span>
+                    </div>
+
+                    <br />
+
+                    <p>The <code>solve</code> and <code>solve-and-validate</code> endpoints require either <code>probID</code>
+                    or both <code>domain</code> and <code>problem</code> to be set as parameters. The former corresponds to the
+                    problem ID as defined by <a href="http://api.planning.domains/">api.planning.domains</a> and the latter can
+                    either be the raw PDDL text, or URLs to the domain and problem file. If URLs are used, then <code>is_url</code>
+                    additionally must be set to true. Finally, for the <code>validate</code> endpoint, <code>plan</code> must be
+                    set and correspond to the IPC standard plan output (i.e., one ground action per line).</p>
+
+                    <p>The return value will depend on the endpoint used,
+                    but the <code>status</code> attribute will always be set to either <code>ok</code> or <code>error</code>.
+                    The <code>result</code> attribute will either be an error message (if appropriate), or contain information
+                    about the computed plan and/or validation. In particular, the following attributes may appear as part of the
+                    <code>result</code>:</p>
+
+                    <table class="table">
+                      <thead><tr>
+                        <th>Attribute</th>
+                        <th>Description</th>
+                      </tr></thead>
+                      <tbody>
+                        <tr><td><code>length</code></td><td>Number of actions in the plan.</td></tr>
+                        <tr><td><code>output</code></td><td>The planner output.</td></tr>
+                        <tr><td><code>parse_status</code></td><td>Indication of the plan parsing (e.g., <code>ok</code>).</td></tr>
+                        <tr><td><code>plan</code></td><td>List of action objects; each containing <code>name</code> and <code>action</code> (a string of the ground action).</td></tr>
+                        <tr><td><code>type</code></td><td>The type of parsing (either <code>simple</code> or <code>full</code>) that was achieved. If <code>simple</code>, then the action objects in <code>plan</code> will just be action names.</td></tr>
+                        <tr><td><code>cost</code></td><td>The plan cost.</td></tr>
+                        <tr><td><code>val_stdout</code></td><td>VAL standard output.</td></tr>
+                        <tr><td><code>val_stderr</code></td><td>VAL standard error.</td></tr>
+                        <tr><td><code>val_status</code></td><td>The return status of VAL (either <code>valid</code> or <code>err</code>).</td></tr>
+                        <tr><td><code>error</code></td><td>Indication of any VAL error.</td></tr>
+                      </tbody>
+                    </table>
+
+
+                </div>
+
+                <div class="col-md-6">
+
+                    <h2>Online Example</h2>
+
+                    <p>Aside from the integration into the <a href="http://editor.planning.domains/">online editor</a>,
+                    you can invoke the planner on the range of domains provided by the <a href="http://api.planning.domains">API</a>
+                    by going to <a href="/list">this page</a>. The same page is provided as part of the open source project
+                    to quickly test your own planner in the cloud as well.</p>
+
+                    <h2>Javascript Example</h2>
+
+                    <p>As an example, if <code>domText</code> and <code>probText</code> respectively
+                    contain the domain and problem PDDL text, then the following Javascript code would
+                    print the server response that includes the plan to the console (note that the
+                    <a href="https://jquery.com/">jQuery</a> library is required for the example):</p>
+
+                    <pre id="javascript-example" class="prettyprint lang-js">$.ajax( {url: "http://solver.planning.domains/solve-and-validate",
+  type: "POST",
+  contentType: 'application/json',
+  data: JSON.stringify({"domain": domText,
+                        "problem": probText})})
+    .done(function (res) {
+      if (res['status'] === 'ok') {
+        window.alert('Plan found!');
+      } else {
+        window.alert('Planning failed.');
+      }
+      console.log(res);
+    }
+);</pre>
+
+                    <h2>Python Example</h2>
+
+                    <p class="column-top">As another example, the following Python code can be considered a fully functional (albeit unreliable)
+                    IPC-style planner (i.e., run using <code>./planner.py domain.pddl problem.pddl plan.ipc</code>):</p>
+
+                    <pre id="python-example" class="prettyprint lang-python">import requests, sys
+
+data = {'domain': open(sys.argv[1], 'r').read(),
+        'problem': open(sys.argv[2], 'r').read()}
+
+resp = requests.post('http://solver.planning.domains/solve',
+                     verify=False, json=data).json()
+
+with open(sys.argv[3], 'w') as f:
+    f.write('\n'.join([act['name'] for act in resp['result']['plan']]))</pre>
+
+
+                    <h2>Limitations</h2>
+
+                    <p>Currently the planner is limited to approximately 500Mb of RAM and has a 10 second time limit. Only
+                    one request can be served at a time, so it may take longer than 10 seconds for a response to be sent,
+                    and there is no guarantee that any request will be handled properly. If someone else requests the service
+                    while you are currently using it, you will need to wait at least 20 seconds before sending another request
+                    (until then, you will just receive a "Server Busy" response). This is to ensure that everyone gets a chance
+                    to use the service, and we avoid having a continual (re)planning approach monopolizing the time. These
+                    restrictions are due to the limited nature of the hosted solution for solver.planning.domains, and this
+                    is the primary purpose of releasing the framework for others to run their own private planner in the cloud.</p>
+
+
+                </div>
+
+            </div><!--.row -->
+
+        </div>
+
+    </section>
+
+    <section id="project" class="project-section">
+
+        <div class="container">
+
+            <div class="row">
+
+                <div class="col-lg-12">
+
+                    <h1>Open Source Project</h1>
+
+                </div>
+
+            </div>
+
+            <div class="row">
+
+                <div class="col-md-6" name="project">
+
+                    <p>The solver.planning.domains service is meant to be for educational purposes only. If you would like
+                    to have a more robust and dedicated solution for solving planning problems as a web service, then the
+                    best option is to host your own private version of the solver framework.</p>
+
+                    <p>The core of solver.planning.domains is released as open source software, and you can find all of the
+                    <a href="https://github.com/AI-Planning/cloud-solver">details at the public repository</a>. You can replace
+                    the planner used by the editor to solve problems, parse and return different or further information, etc. If you have any
+                    feedback on improvements or bugs that exist, then please do let us know by filing a bug report.</p>
+
+                </div>
+
+            </div>
+
+        </div>
+
+    </section>
+
+    <!-- Contact Section -->
+    <!--section id="contest" class="contest-section">
+
+        <div class="container">
+
+            <div class="row">
+
+                <div class="col-lg-12">
+
+                    <h1>Ultra-Agile Competition</h1>
+
+                </div>
+
+            </div>
+
+            <div class="row">
+
+                <div class="col-md-6" name="project">
+
+                    <h2>Backround</h2>
+
+                    <p>The motivation behind a planner in the cloud is to provide a service for the planning.domains <a href="http://editor.planning.domains/">editor</a>.
+                    As such, we want to have the most responsive planner possible for solving small problems, while a new
+                    domain is being created. To find the best planner among all those available, we rely on the planning
+                    community to put forward any planner that can oust the current one used online. Hence, the need for an
+                    <em>Ultra-Agile Planning Competition</em>.</p>
+
+                    <p>Every 2-3 months, if there is at least one other planner put forward to challenge the incumbent,
+                    a suite of benchmarks will be run on all planners currently vying for ultra-agile supremacy. The
+                    fastest planner will become the new incumbent, and this page will be updated with the results.</p>
+
+                    <p>The current incumbent planner is SIW+-then-BFSf, a configuration put forward by Nir Lipovetzky,
+                    Miquel Ramirez, and Christian Muise from the <a href="http://lapkt.org">LAPKT</a> planning framework.
+                    The first round of the ultra-agile comparison is set to take place in August, 2015. If you would
+                    like to have your planner considered, fork the open source project and make sure that you can run your
+                    planner on the heroku servers, then contact <a href="http://www.haz.ca/">Christian Muise</a> to
+                    have your planner entered.</p>
+
+                    <h2>Criteria and Rules</h2>
+
+                    <p>The solvers do not need to be open source, but they must work without issue using the solver framework
+                    (see the <a href="#project">open source project</a> for more details on getting your own solver
+                    running in the cloud). The only metric used for comparison will be the IPC time score;
+                    measured as the best time divided by your time for every problem, summed over all problems. Naturally, this
+                    will favour planners with higher coverage, and focus primarily on time-to-valid solution
+                    rather than solution quality.</p>
+
+                    <p>The one non-standard rule is that the timeout will be capped at 10 seconds and the memory
+                    at 500Mb. If the problem cannot be parsed, solved, and returned within those limitations,
+                    it is not considered solved in an "ultra-agile" manner.</p>
+
+                    <p>The benchmark set used for testing will not be shared publicly, but will be a subset of all
+                    those available in the <a href="http://api.planning.domains/">domain repository</a>. Any problems
+                    that arise when running the planner will be debugged with the planner authors. Finally, for the
+                    time being, all benchmarks used for evaluation will be STRIPS.</p>
+
+                </div>
+
+                <div class="col-md-6">
+
+                    <h2>Difference from the Agile IPC Track?</h2>
+                    <p>In the 2014 IPC, an <a href="https://helios.hud.ac.uk/scommv/IPC-14/seqagi.html">agile track</a>
+                    was run. While this was a compelling first step towards promoting fast planners, the motivation of the Ultra-Agile
+                    Planning Competition deviates slightly. First, it will (hopefully) serve
+                    as a far more fine-grained solution to the question of "what is the fastest planner out there?";
+                    at least on the classical benchmark domains that we tend to see. Second, with a cut-off of 10 seconds,
+                    the type of solver that will do well must be efficient in areas not typically considered by contest
+                    planners: parsing and preprocessing become paramount, and limited memory must be considered.</p>
+
+                    <p>The Ultra-Agile Competition is not intended to replace the Sequential Agile track at IPC, but
+                    rather complement it by focusing on planning solutions that are light-weight and efficient for many
+                    problems. Also, it is far more informal, and will be run in an ad-hoc manner whenever someone
+                    wishes to dethrone the current best-in-class solver.</p>
+
+                </div>
+
+            </div>
+
+        </div>
+
+    </section-->
+
+    <section id="footer" class="footer-section">
+        <div class="container">
+            <div class="row">
+
+                <div class="col-lg-3">
+                    <a target="_blank" href="http://icaps-conference.org"><img src="images/icapslogo.png" height="126px" alt="ICAPS" /></a>
+                </div>
+
+                <div class="col-lg-6">
+                    <a target="_blank" href="http://mers.csail.mit.edu/"><img src="images/mitlogo.png" height="50px" alt="MIT" /></a>
+                    <a target="_blank" href="http://agentlab.cis.unimelb.edu.au/project-hac.html"><img src="images/melbourne.png" height="80px" alt="The University of Melbourne" /></a>
+                    <a target="_blank" href="http://www.inf.kcl.ac.uk/research/groups/PLANNING/"><img src="images/KingsCollege.png" height="60px" alt="Kings College" /></a>
+                    <a target="_blank" href="http://www.hud.ac.uk/research/researchcentres/park/"><img src="images/uni-hud-logo.png" height="70px" alt="The University of Huddersfield" /></a> <br /><br />
+                    <a target="_blank" href="http://ai.cs.unibas.ch/"><img src="images/unibasel.png" height="70px" alt="University of Basel" /></a>
+                    <a target="_blank" href="http://ai.cecs.anu.edu.au/"><img src="images/anu.png" height="40px" alt="Australian National University" /></a>
+                    <a target="_blank" href="http://org.nicta.com.au/"><img src="images/nicta.png" height="70px" alt="NICTA" /></a>
+                </div>
+
+                <div class="col-lg-3">
+                    <ul>
+                        <li>&copy; 2015 planning.domains</li>
+                        <li>TLD hosted by <a target="_blank" href="http://www.inf.kcl.ac.uk/staff/andrew">Andrew Coles</a></li>
+                        <li>Developed by <a target="_blank" href="http://www.haz.ca/">Christian Muise</a></li>
+                        <li>Design by <a target="_blank" href="http://www.kristietaylor-muise.ca/">Kristie Taylor-Muise</a></li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Load up jquery -->
+    <script type="text/javascript" src="https://code.jquery.com/jquery-1.11.3.min.js"></script>
+
+    <!-- Latest compiled and minified JavaScript -->
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.4/js/bootstrap.min.js"></script>
+
+	<!-- Prettify code snippets -->
+    <script src="https://cdn.rawgit.com/google/code-prettify/master/loader/run_prettify.js"></script>
+
+    <!-- Scrolling Nav JavaScript -->
+    <script src="js/jquery.easing.min.js"></script>
+    <script src="js/scrolling-nav.js"></script>
+
+    <script type="text/javascript">
+        $.get('http://api.planning.domains/json/version', function(res) {
+            if (res.version < 0) {
+                var msg = '<div class="alert alert-warning">';
+                msg += '<a href="#" class="close" data-dismiss="alert">&times;</a>';
+                msg += '<strong>Warning!</strong> A new API version (' + Math.abs(res.version);
+                msg += ') is currently being deployed. This service may be unstable / unreliable.';
+                msg += '</div>';
+                $('#api-warning').html(msg);
+            }
+        });
+    </script>
+
+<script>
+  (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+  (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+  m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+  })(window,document,'script','//www.google-analytics.com/analytics.js','ga');
+
+  ga('create', 'UA-62782428-4', 'auto');
+  ga('send', 'pageview');
+
+</script>
+
+</body>
+</html>

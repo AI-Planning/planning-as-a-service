@@ -1,0 +1,40 @@
+#api_selector {
+  padding: 20px;
+  background-color: #333333;
+  font-size: 1.3em;
+  color: white;
+  margin-bottom: 20px;
+}
+
+#api_selector a {
+  color: white;
+  font-weight: bold;
+}
+
+#api_selector > div {
+  margin-bottom: 20px;
+}
+
+#api_selector > div > div:first-child {
+  text-align: right;
+}
+
+#prob_desc > ul {
+  padding-left: 0px;
+}
+
+#prob_desc > ul > li {
+  list-style-type: none;
+}
+
+#solving {
+   margin-left:20px;
+}
+
+#solving .progress{
+  height: 34px;
+  padding-left: 0px;
+  padding-right: 0px;
+  visibility: hidden;
+}
+
