@@ -1,0 +1,308 @@
+/****************
+Template: http://startbootstrap.com/template-overviews/scrolling-nav/
+with Custom CSS by www.kristietaylor-muise.ca
+****************/
+
+/*GLOBAL FORMATTING**********************/
+
+html {
+    width: 100%;
+    height: 100%;
+}
+
+body {
+    width: 100%;
+    height: 100%;
+    font-family: 'Vollkorn', serif;
+    color:#383838;
+    font-size: 16px;
+    font-weight:400;
+    line-height: 1.5;
+}
+
+/*TYPOGRAPHY*******************************/
+
+a { color: #8425BB; }
+a:hover { color:#681598; }
+
+p {
+  margin: 5px 0 25px;
+}
+
+.h1, .h2, .h3, h1, h2, h3 {
+    margin-top: 30px;
+    margin-bottom: 10px;
+}
+
+h2 {
+    font-size: 24px;
+}
+
+ol {
+    margin-bottom:25px;
+}
+
+.site-title {
+    font-size:4em;
+    color:#fff;
+    text-shadow: 1px 1px 1px #00633d;
+}
+
+.site-description {
+    color: #E2EFEA;
+    font-size:1.8em;
+    font-style:italic;
+}
+
+.site-components a {
+    border: 1px solid #787089;
+    width:100%;
+    color:#C3BACD;
+    text-align:center;
+    padding:10px 20px;
+    float:left;
+    font-size:1em;
+    margin-bottom:1em;
+}
+
+.site-components div {
+    padding-left: 4px;
+    padding-right: 4px;
+}
+
+a#current-page  {
+    color:#fff;
+    background-color:#3F2A4D;
+}
+
+.glyphicon-share {
+  content: "\e066";
+  font-size: 0.7em;
+  padding-left: 1em;
+}
+
+.site-components p {
+    color:#ABD5C6;
+    text-align:center;
+    font-size:1.5em;
+    width:3%;
+    margin-left:2%;
+    float:left;
+}
+
+.site-components a#far-left {
+    width:95%;
+}
+
+.site-components a:hover {
+    text-decoration:none;
+    background-color:#3F2A4D;
+    color:#fff;
+}
+
+.table>tbody>tr>td, .table>tbody>tr>th, .table>tfoot>tr>td, .table>tfoot>tr>th, .table>thead>tr>td, .table>thead>tr>th {
+      border-top: 1px solid #B3C8BF;
+}
+
+.table>thead>tr>th {
+  vertical-align: bottom;
+  border-bottom: 2px solid #B3C8BF;
+}
+
+th {
+    font-weight: normal;
+    font-size: 20px;
+}
+
+/*CODE ELEMENTS*******************************/
+
+code {
+    color: #000;
+    background-color: #E6DFED;
+}
+
+.ep-type {
+    color: #c8e6c9;
+}
+
+.ep-base {
+    color: #c4d4dc;
+}
+
+.ep-path {
+    color: #eceff1;
+}
+
+.ep-param {
+    color:#f1edcc;
+}
+
+.endpoint {
+    background-color:#566E5F;
+    -webkit-border-radius: 4px 4px 4px 4px;
+    border-radius: 4px 4px 4px 4px;
+    padding:10px;
+}
+
+pre {
+    background-color: #FCF8FF;
+}
+
+section pre.prettyprint {
+	padding: 13px;
+	word-wrap: normal;
+}
+
+/*NAVIGATION*******************************/
+
+.navbar-default {
+  background-color: #2A1538;
+  border:0;
+}
+
+.navbar-default .navbar-nav>li>a, .navbar-default .navbar-brand {
+    color: #eee;
+    text-shadow: 1px 1px 1px #000000;
+}
+
+.navbar-default .navbar-nav>li>a:hover, .navbar-default .navbar-brand:hover, .navbar-default .navbar-brand:focus, .navbar-default .navbar-brand:hover {
+     color:#eee;
+}
+
+.navbar-default .navbar-nav>.active>a, .navbar-default .navbar-nav>.active>a:focus, .navbar-default .navbar-nav>.active>a:hover {
+    color:#eee;
+    background-color: #0A042F;
+    text-shadow: 1px 1px 1px #00472C;
+}
+
+/*LAYOUT*******************************/
+
+.intro-section {
+    height: 100%;
+    max-height:650px;
+    padding-top: 13%;
+    background-image:url('../images/subtlenet2.png');
+    /*  background-color: #2a6b52;*/
+}
+
+.solver-section, .description-section, .project-section, .contest-section, .footer-section {
+    padding-top: 70px;
+    padding-bottom: 70px;
+}
+
+.solver-section, .footer-section {
+    background:#F4F1F9;
+}
+
+.project-section {
+    background:#EFEBF5;
+}
+
+.contest-section {
+    background:#F4F1F9;
+}
+
+.footer-section img {
+    margin-right:30px;
+}
+
+.footer-section ul {
+    float:right;
+}
+
+.copy {
+   list-style-type:none;
+}
+
+/*MEDIA QUERIES*******************************/
+
+@media(min-width:767px) {
+    .navbar {
+        padding: 20px 0;
+        -webkit-transition: background .5s ease-in-out,padding .5s ease-in-out;
+        -moz-transition: background .5s ease-in-out,padding .5s ease-in-out;
+        transition: background .5s ease-in-out,padding .5s ease-in-out;
+    }
+
+    .top-nav-collapse {
+        padding: 0;
+    }
+}
+
+
+@media only screen and (max-width: 1197px) { /* Smaller than standard 960 (devices and browsers) */
+
+  .site-components a {
+        font-size: 0.9em;
+        padding: 10px 8px;
+    }
+}
+
+@media only screen and (min-width: 480px) and (max-width: 767px) { /* Mobile Landscape Size to Tablet Portrait (devices and browsers) */
+ .site-title {
+      font-size: 2.5em;
+      margin-top: 100px;
+      text-align: center;
+    }
+
+    .site-description {
+      font-size: 1.3em;
+      text-align: center;
+    }
+
+    .site-components p {
+        display:none;
+    }
+
+    .site-components a#far-left {
+      width: 100%;
+    }
+}
+
+@media only screen and (max-width: 479px) { /* Mobile Portrait Size to Mobile Landscape Size (devices and browsers) */
+
+    body {
+        font-size: 14px;
+        line-height: 1.4;
+    }
+
+    h1 {
+        font-size: 26px;
+    }
+
+    h2 {
+        font-size: 20px;
+    }
+
+    th {
+      font-size: 16px;
+    }
+
+    .site-title {
+      font-size: 1.8em;
+      margin-top: 100px;
+      text-align: center;
+    }
+
+    .site-description {
+      font-size: 1.3em;
+      text-align: center;
+    }
+
+    .components {
+      font-size: 1.1em;
+    }
+
+    .site-components p {
+        display:none;
+    }
+
+    .site-components a#far-left {
+      width: 100%;
+    }
+
+    .copy {
+      margin-top: 50px;
+    }
+}
+

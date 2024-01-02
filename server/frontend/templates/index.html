@@ -1,0 +1,252 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="description" content="">
+    <meta name="author" content="">
+
+    <title>solver.planning.domains</title>
+
+    <!-- Fonts -->
+    <link href='http://fonts.googleapis.com/css?family=Vollkorn:400italic,400' rel='stylesheet' type='text/css'>
+
+	<!-- Bootstrap Core CSS -->
+  <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.4/css/bootstrap.min.css">
+
+  <!-- Custom CSS -->
+  <link href="css/scrolling-nav.css" rel="stylesheet">
+
+  <!-- HTML5 Shim and Respond.js IE8 support of HTML5 elements and media queries -->
+  <!-- WARNING: Respond.js doesn't work if you view the page via file:// -->
+  <!--[if lt IE 9]>
+      <script src="https://oss.maxcdn.com/libs/html5shiv/3.7.0/html5shiv.js"></script>
+      <script src="https://oss.maxcdn.com/libs/respond.js/1.4.2/respond.min.js"></script>
+  <![endif]-->
+
+</head>
+
+<!-- The #page-top ID is part of the scrolling feature - the data-spy and data-target are part of the built-in Bootstrap scrollspy function -->
+
+<body id="page-top" data-spy="scroll" data-target=".navbar-fixed-top">
+
+    <!-- Navigation -->
+    <nav class="navbar navbar-default navbar-fixed-top" role="navigation">
+        <div class="container">
+            <div class="navbar-header page-scroll">
+                <button type="button" class="navbar-toggle" data-toggle="collapse" data-target=".navbar-ex1-collapse">
+                    <span class="sr-only">Toggle navigation</span>
+                    <span class="icon-bar"></span>
+                    <span class="icon-bar"></span>
+                    <span class="icon-bar"></span>
+                </button>
+                <a class="navbar-brand page-scroll" href="#page-top">Home</a>
+            </div>
+
+            <!-- Collect the nav links, forms, and other content for toggling -->
+            <div class="collapse navbar-collapse navbar-ex1-collapse">
+                <ul class="nav navbar-nav">
+                    <!-- Hidden li included to remove active class from about link when scrolled up past about section -->
+                    <li class="hidden">
+                        <a class="page-scroll" href="#page-top"></a>
+                    </li>
+                    <li>
+                        <a class="page-scroll" href="#solver">Online Solver</a>
+                    </li>
+                    <li>
+                        <a class="page-scroll" href="#project">Open Source Project</a>
+                    </li>
+                </ul>
+                <ul class="nav navbar-nav navbar-right">
+                    <li><a href="http://planning.domains/">planning.domains</a></li>
+                </ul>
+            </div>
+            <!-- /.navbar-collapse -->
+        </div>
+        <!-- /.container -->
+    </nav>
+
+    <!-- Intro Section -->
+    <section id="intro" class="intro-section">
+        <div class="container">
+            <div class="row">
+                <div class="col-lg-12">
+
+                    <div id="api-warning"></div>
+
+                    <h1 class="site-title">Solver.Planning.Domains</h1>
+                     <p class="site-description">An automated planner in the cloud.</p>
+
+                     <div class="row site-components">
+
+                        <div class="col-md-3">
+                            <a id="far-left" target="_blank" href="http://planning.domains/">planning.domains<span class="glyphicon glyphicon-share"></span></a> <p>:</p>
+                        </div>
+
+                        <div class="col-md-3">
+                            <a target="_blank" href="http://api.planning.domains/">1) api.planning.domains<span class="glyphicon glyphicon-share"></span></a>
+                        </div>
+
+                        <div class="col-md-3">
+                            <a target="_blank" id="current-page" href="http://solver.planning.domains/">2) solver.planning.domains</a>
+                        </div>
+
+                        <div class="col-md-3"></div>
+
+                    </div>
+
+                    <div class="row site-components">
+
+                        <div class="col-md-3"></div>
+
+                        <div class="col-md-3">
+                            <a target="_blank" href="http://editor.planning.domains/">3) editor.planning.domains<span class="glyphicon glyphicon-share"></span></a>
+                        </div>
+
+                        <div class="col-md-3">
+                            <a target="_blank" href="http://education.planning.domains/">4) education.planning.domains<span class="glyphicon glyphicon-share"></span></a>
+                        </div>
+
+                        <div class="col-md-3"></div>
+
+                    </div>
+
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- About Section -->
+    <section id="solver" class="solver-section">
+
+        <div class="container">
+
+            <div class="row">
+
+                <div class="col-md-12">
+
+                    <h1>PDDL Solver</h1>
+
+                </div>
+
+            </div>
+
+            <div class="row">
+
+                <div class="col-md-6" name="solver">
+
+                    <h2>Planning-as-a-Service</h2>
+
+                    <p>The solver component of <a href="http://planning.domains/">planning.domains</a> hosts
+                        a wide variety of planning services that represent some of the most common planners
+                        found in the planutils project. You can invoke the software either by sending links
+                        to the PDDL files or sending raw PDDL content in JSON format directly to retrieve a
+                        plan. This service replaces the legacy solver (details archived <a href="/legacy">here</a>).</p>
+
+                    <p>More details on the API usage will be provided here soon, but in the meantime you can
+                        find all of the info on the project below from the open source repository.</p>
+
+                </div>
+
+            </div><!--.row -->
+
+        </div>
+
+    </section>
+
+    <section id="project" class="project-section">
+
+        <div class="container">
+
+            <div class="row">
+
+                <div class="col-lg-12">
+
+                    <h1>Open Source Project</h1>
+
+                </div>
+
+            </div>
+
+            <div class="row">
+
+                <div class="col-md-6" name="project">
+
+                    <p>The solver.planning.domains service is meant to be for educational purposes only. If you would like
+                    to have a more robust and dedicated solution for solving planning problems as a web service, then the
+                    best option is to host your own private version of the solver framework.</p>
+
+                    <p>The core of solver.planning.domains is released as open source software, and you can find all of the
+                    <a href="https://github.com/AI-Planning/planning-as-a-service">details at the public repository</a>. You can replace
+                    the planners used by the editor to solve problems, parse and return different or further information, etc. If you have any
+                    feedback on improvements or bugs that exist, then please do let us know by filing a bug report.</p>
+
+                </div>
+
+            </div>
+
+        </div>
+
+    </section>
+
+    <section id="footer" class="footer-section">
+        <div class="container">
+            <div class="row">
+
+                <div class="col-lg-3">
+                    <a target="_blank" href="http://icaps-conference.org"><img src="images/icapslogo.png" height="126px" alt="ICAPS" /></a>
+                </div>
+
+                <div class="col-lg-6">
+                    <a target="_blank" href="http://mers.csail.mit.edu/"><img src="images/mitlogo.png" height="50px" alt="MIT" /></a>
+                    <a target="_blank" href="http://agentlab.cis.unimelb.edu.au/project-hac.html"><img src="images/melbourne.png" height="80px" alt="The University of Melbourne" /></a>
+                    <a target="_blank" href="http://www.inf.kcl.ac.uk/research/groups/PLANNING/"><img src="images/KingsCollege.png" height="60px" alt="Kings College" /></a>
+                    <a target="_blank" href="http://www.hud.ac.uk/research/researchcentres/park/"><img src="images/uni-hud-logo.png" height="70px" alt="The University of Huddersfield" /></a> <br /><br />
+                    <a target="_blank" href="http://ai.cs.unibas.ch/"><img src="images/unibasel.png" height="70px" alt="University of Basel" /></a>
+                    <a target="_blank" href="http://ai.cecs.anu.edu.au/"><img src="images/anu.png" height="40px" alt="Australian National University" /></a>
+                    <a target="_blank" href="http://org.nicta.com.au/"><img src="images/nicta.png" height="70px" alt="NICTA" /></a>
+                </div>
+
+                <div class="col-lg-3">
+                    <ul>
+                        <li>&copy; 2015 planning.domains</li>
+                        <li>TLD hosted by <a target="_blank" href="http://www.inf.kcl.ac.uk/staff/andrew">Andrew Coles</a></li>
+                        <li>Developed by <a target="_blank" href="http://www.haz.ca/">Christian Muise</a></li>
+                        <li>Design by <a target="_blank" href="http://www.kristietaylor-muise.ca/">Kristie Taylor-Muise</a></li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Load up jquery -->
+    <script type="text/javascript" src="https://code.jquery.com/jquery-1.11.3.min.js"></script>
+
+    <!-- Latest compiled and minified JavaScript -->
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.4/js/bootstrap.min.js"></script>
+
+	<!-- Prettify code snippets -->
+    <script src="https://cdn.rawgit.com/google/code-prettify/master/loader/run_prettify.js"></script>
+
+    <!-- Scrolling Nav JavaScript -->
+    <script src="js/jquery.easing.min.js"></script>
+    <script src="js/scrolling-nav.js"></script>
+
+    <script type="text/javascript">
+        $.get('http://api.planning.domains/json/version', function(res) {
+            if (res.version < 0) {
+                var msg = '<div class="alert alert-warning">';
+                msg += '<a href="#" class="close" data-dismiss="alert">&times;</a>';
+                msg += '<strong>Warning!</strong> A new API version (' + Math.abs(res.version);
+                msg += ') is currently being deployed. This service may be unstable / unreliable.';
+                msg += '</div>';
+                $('#api-warning').html(msg);
+            }
+        });
+    </script>
+
+</body>
+</html>

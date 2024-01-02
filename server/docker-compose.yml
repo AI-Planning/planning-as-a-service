@@ -1,5 +1,16 @@
 version: "3.2"
 services:
+  frontend:
+    privileged: true
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    restart: always
+    ports:
+     - "80:80"
+    # Uncomment below if you need to run it with SSL certificate, and edit frontend/Dockerfile nginx command
+    # volumes:
+    #   - /etc/letsencrypt:/etc/letsencrypt
   web:
     privileged: true
     build:
@@ -10,7 +21,7 @@ services:
      - "5001:5001"
     depends_on:
       - redis
-    # Uncomment below if you need to run it with SSL certificate, and edit api/Dockerfile gunicorn command  
+    # Uncomment below if you need to run it with SSL certificate, and edit api/Dockerfile gunicorn command
     # volumes:
     #   - /etc/letsencrypt:/etc/letsencrypt
 
@@ -35,7 +46,7 @@ services:
           memory: ${MAX_MEMORY_PER_DOCKER_WORKER:-500M}
     depends_on:
       - redis
-    
+
   monitor:
     build:
       context: celery-queue
@@ -46,7 +57,7 @@ services:
     command:  -A tasks --port=5555 --broker=redis://redis:6379/0 --basic_auth=${FLOWER_USERNAME:-username}:${FLOWER_PASSWORD:-password} --max_tasks=${FLOWER_MONITOR_MAX_TASKS:-10000}
     depends_on:
       - redis
-  
+
   redis:
     image: redis
 
