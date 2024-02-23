@@ -128,8 +128,13 @@ def run_package(self, package: str, arguments:dict, call:str, output_file:dict,*
                 # k needs to be replaced with the value
                 call = call.replace("{%s}" % k, str(v['value']))
 
-        # add the timeout to the call
+        
+        # Avoid planutils consuming a planner argument
+        planner = call.split(' ')[0]
+        args = ' '.join(call.split(' ')[1:])
+        call = f'{planner} -- {args}'
         call = f"timeout {TIME_LIMIT} planutils run {call}"
+        
         res = subprocess.run(call, stdout=subprocess.PIPE, stderr=subprocess.PIPE,
                             executable='/bin/bash', encoding='utf-8',
                             shell=True, cwd=tmpfolder)
