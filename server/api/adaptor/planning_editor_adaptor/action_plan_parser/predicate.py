@@ -1,3 +1,5 @@
+import re
+
 class Predicate (object):
     """
         Simple data structure for the predicate objects.
@@ -114,9 +116,12 @@ class Predicate (object):
             arg_s = " ".join (["%s - %s" % (v, t) for v, t in l])
         else:
             arg_s = " ".join ([v for v, t in l])
-        
-        for k in grounding:
-            arg_s = arg_s.replace(k, grounding[k])
+
+        # Create a regex pattern that matches the keys exactly
+        pattern = '|'.join(re.escape(key) for key in sorted(grounding.keys(), key=len, reverse=True))
+
+        # Use re.sub() to replace all matched keys to their corresponding value
+        arg_s = re.sub(pattern, lambda match: grounding[match.group(0)], arg_s)
 
         return (sp * lvl) + "(%s%s%s)" % (self.name, sep, arg_s)
 
