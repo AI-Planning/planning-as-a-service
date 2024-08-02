@@ -5,6 +5,7 @@ ENV PORT 80
 ENV DEBUG true
 
 COPY . /frontend
+COPY ../requirements.txt /api/requirements.txt
 WORKDIR /frontend
 
 RUN apt-get update

@@ -1,6 +1,6 @@
 # Stage 0: Build Celery worker
 
-FROM planutils:latest 
+FROM planutils:latest
 
 
 ENV CELERY_BROKER_URL redis://redis:6379/0
@@ -11,6 +11,7 @@ ENV WEB_DOCKER_URL web
 ENV PATH=$PATH:~/.planutils/bin
 
 COPY . /queue
+COPY ../requirements.txt /api/requirements.txt
 WORKDIR /queue
 
 RUN apt-get update

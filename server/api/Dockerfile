@@ -10,6 +10,7 @@ ENV PORT 5001
 ENV DEBUG true
 
 COPY . /api
+COPY ../requirements.txt /api/requirements.txt
 WORKDIR /api
 
 RUN apt-get update
@@ -27,5 +28,5 @@ RUN pip install gunicorn
 # # run the app server. If you need https, use the command below instead.
 CMD ["gunicorn", "--bind", "0.0.0.0:5001", "--workers", "3", "app:app"]
 
-# # run the app server with https. 
+# # run the app server with https.
 # # CMD ["gunicorn", "--bind", "0.0.0.0:5001", "--workers", "3", "--certfile", "/etc/letsencrypt/live/paas-uom.org/fullchain.pem", "--keyfile", "/etc/letsencrypt/live/paas-uom.org/privkey.pem", "app:app"]
