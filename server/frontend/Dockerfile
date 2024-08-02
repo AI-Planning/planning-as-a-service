@@ -5,15 +5,7 @@ ENV PORT 80
 ENV DEBUG true
 
 COPY . /frontend
-COPY ../requirements.txt /api/requirements.txt
 WORKDIR /frontend
-
-RUN apt-get update
-RUN apt-get install -y python3-dev
-
-# install requirements
-RUN python3 -m pip install --upgrade pip setuptools wheel
-RUN python3 -m pip install -r requirements.txt
 
 # expose the app port
 EXPOSE 80

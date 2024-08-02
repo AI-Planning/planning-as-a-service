@@ -10,15 +10,7 @@ ENV PORT 5001
 ENV DEBUG true
 
 COPY . /api
-COPY ../requirements.txt /api/requirements.txt
 WORKDIR /api
-
-RUN apt-get update
-RUN apt-get install -y libmysqlclient-dev python3-dev build-essential
-
-# install requirements
-RUN python3 -m pip install --upgrade pip setuptools wheel
-RUN python3 -m pip install -r requirements.txt
 
 # expose the app port
 EXPOSE 5001

@@ -11,11 +11,4 @@ ENV WEB_DOCKER_URL web
 ENV PATH=$PATH:~/.planutils/bin
 
 COPY . /queue
-COPY ../requirements.txt /api/requirements.txt
 WORKDIR /queue
-
-RUN apt-get update
-RUN apt-get install -y libmysqlclient-dev python3-dev build-essential
-
-RUN python3 -m pip install --upgrade pip setuptools wheel
-RUN python3 -m pip install -r requirements.txt
