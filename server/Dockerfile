@@ -11,11 +11,11 @@ RUN planutils install -f -y dual-bfws-ffparser
 #Optimal classical planning
 RUN planutils install -f -y delfi
 
-# top-k classical planning
-RUN planutils install -f -y forbiditerative-topk
+# top-k classical planning -- currently unavailable
+# RUN planutils install -f -y forbiditerative-topk
 
 # numeric planning
-RUN planutils install -f -y enhsp-2020
+RUN planutils install -f -y enhsp
 
 # PDDL3 support
 RUN planutils install -f -y optic
