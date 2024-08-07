@@ -136,7 +136,7 @@ req_body = {
 }
 
 # Send job request to solve endpoint
-solve_request_url=requests.post("http://localhost:5001/package/lama/solve", json=req_body).json()
+solve_request_url=requests.post("http://localhost:5001/package/lama-first/solve", json=req_body).json()
 
 # Query the result in the job
 celery_result=requests.post('http://localhost:5001' + solve_request_url['result'])
