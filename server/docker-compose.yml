@@ -1,6 +1,5 @@
 services:
   frontend:
-    privileged: true
     build:
       context: ./frontend
       dockerfile: Dockerfile
@@ -11,7 +10,6 @@ services:
     # volumes:
     #   - /etc/letsencrypt:/etc/letsencrypt
   web:
-    privileged: true
     build:
       context: ./api
       dockerfile: Dockerfile
@@ -75,3 +73,4 @@ services:
     volumes:
       - ./init:/docker-entrypoint-initdb.d
       - ./db_data:/var/lib/mysql
+    user: ${CURRENT_USER_ID:-1000}:${CURRENT_GROUP_ID:-1000}
