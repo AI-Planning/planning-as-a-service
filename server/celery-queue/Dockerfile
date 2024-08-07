@@ -1,6 +1,6 @@
 # Stage 0: Build Celery worker
 
-FROM planutils:latest 
+FROM paas:latest
 
 
 ENV CELERY_BROKER_URL redis://redis:6379/0
@@ -12,9 +12,3 @@ ENV PATH=$PATH:~/.planutils/bin
 
 COPY . /queue
 WORKDIR /queue
-
-RUN apt-get update
-RUN apt-get install -y libmysqlclient-dev python3-dev build-essential
-
-RUN python3 -m pip install --upgrade pip setuptools wheel
-RUN python3 -m pip install -r requirements.txt

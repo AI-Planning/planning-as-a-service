@@ -130,3 +130,5 @@ dmypy.json
 
 
 .vscode
+
+server/db_data
