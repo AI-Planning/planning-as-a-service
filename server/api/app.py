@@ -57,7 +57,8 @@ app.config['MAX_CONTENT_LENGTH'] = 16 * 1024 * 1024
 # For any unexpected error, this error message will return
 @app.errorhandler(500)
 def internal_error(error):
-    return jsonify({"Error": "This Planutils package is not configured correctly"})
+    app.logger.error('Server Error: %s', (error))
+    return jsonify({"error": "There was a server-side error trying to run a planutils package."})
 
 
 # Solver API
@@ -126,7 +127,7 @@ def runPackage(package, service):
 
         if service not in PACKAGES[package]['endpoint'].get('services',{}):
             return jsonify({"Error":"That package does not contain service " + service})
- 
+
         persistent_value="true" if request.headers.get('persistent',"false") == "true" else "false"
 
         # Grabs the request data (JSON)
