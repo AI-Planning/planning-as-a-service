@@ -126,7 +126,7 @@ def runPackage(package, service):
 
         if service not in PACKAGES[package]['endpoint'].get('services',{}):
             return jsonify({"Error":"That package does not contain service " + service})
- 
+
         persistent_value="true" if request.headers.get('persistent',"false") == "true" else "false"
 
         # Grabs the request data (JSON)
@@ -159,7 +159,7 @@ def get_available_package():
         all_packages[package]["package_name"]=package
 
     # Return the manifest of installed package
-    insterested_package={package: all_packages[package] for package in all_packages if package in installed_package if "solve" in all_packages[package].get("endpoint", {}).get("services", {})}
+    insterested_package={package: all_packages[package] for package in all_packages if package in installed_package if "services" in all_packages[package].get("endpoint", {})}
     return jsonify(insterested_package)
 
 
