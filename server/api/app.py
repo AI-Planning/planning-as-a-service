@@ -57,7 +57,8 @@ app.config['MAX_CONTENT_LENGTH'] = 16 * 1024 * 1024
 # For any unexpected error, this error message will return
 @app.errorhandler(500)
 def internal_error(error):
-    return jsonify({"Error": "This Planutils package is not configured correctly"})
+    app.logger.error('Server Error: %s', (error))
+    return jsonify({"error": "There was a server-side error trying to run a planutils package."})
 
 
 # Solver API
