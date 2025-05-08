@@ -172,6 +172,31 @@ RUN planutils install -f -y dual-bfws-ffparser
 ```
 To learn how to setup a new planner in planutils, see the information in [planuitls github repo](https://github.com/AI-Planning/planutils#5-add-a-new-package)
 
+## Troubleshooting
+
+### Worker failures
+
+These would manifest themselves as the worker(s) repeatedly restarting.  You can see this in `docker compose logs worker`.
+
+One possible explanation is out of memory errors.  To investigate this: use `docker container list` to find the identifier of the docker container for the worker.  Invoke `docker inspect <docker-container-id>` and look for something like this:
+```
+        "State": {
+            "Status": "restarting",
+            "Running": true,
+            "Paused": false,
+            "Restarting": true,
+            "OOMKilled": true,    <----------------
+            "Dead": false,
+            "Pid": 0,
+            "ExitCode": 137,
+            "Error": "",
+            "StartedAt": "2025-05-08T17:44:23.979871719Z",
+            "FinishedAt": "2025-05-08T17:44:28.22886954Z"
+        },
+```
+
+If this is the problem, try setting the environment variable `MAX_MEMORY_PER_DOCKER_WORKER` to a larger value before invoking `make` to start the system.
+
 ## Editor.Planning.Domains plugin
 
 If you want to edit the plugin exposing the service to the online editor, take a look at the [plugin codebase](https://github.com/AI-Planning/planning-as-a-service-plugin)
