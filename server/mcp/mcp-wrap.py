@@ -1,3 +1,5 @@
+import os
+
 # MCP/API related imports
 import httpx
 from mcp.server.fastmcp import FastMCP
@@ -11,10 +13,9 @@ from typing import Any, Dict, Optional
 mcp = FastMCP("PaaS-wrap")
 
 # config variables (constant)
-PAAS_BASE_URL = "http://localhost:5001" # default API destination
-DEFAULT_TIMEOUT_S = 30 # max time wrapper will wait for plan
-DEFAULT_POLL_INTERVAL_S = 0.5 # how often we check the planner
-HTTP_TIMEOUT_S = 10 # timout for HTTP requests
+PAAS_BASE_URL = f"http://localhost:{os.getenv('PAAS_PORT', 5001)}" # default API destination
+DEFAULT_TIMEOUT_S = int(os.getenv("TIME_LIMIT", 30)) # max time wrapper will wait for plan
+DEFAULT_POLL_INTERVAL_S = float(os.getenv("MCP_POLL_INTERVAL", 0.5)) # how often we check the planner
 
 def _complete_check_url(job_tag: str) -> str:
     """
@@ -30,7 +31,7 @@ def _http_client() -> httpx.Client:
     """
     Create client to make requests to PaaS
     """
-    return httpx.Client(timeout=HTTP_TIMEOUT_S)
+    return httpx.Client(timeout=DEFAULT_TIMEOUT_S)
 
 @mcp.tool()
 def paas_list_packages() -> Dict[str, Any]:
@@ -46,7 +47,6 @@ def paas_list_packages() -> Dict[str, Any]:
     except httpx.HTTPError as e:
         return {"status": "error", "error": str(e), "url": url}
     
-
 @mcp.tool()
 def paas_solve(
     planner: str,
@@ -147,8 +147,14 @@ def paas_solve(
             "check_url": _complete_check_url(submit_json["result"]),
             "last": last_json,
         }
+    except KeyError as e:
+        return {
+            "status": "error",
+            "planner": planner,
+            "error": f"Unexpected response format, missing key: {str(e)}",
+            "submit_url": submit_url,
+        }
 
 
 if __name__ == "__main__":
     mcp.run()
-    

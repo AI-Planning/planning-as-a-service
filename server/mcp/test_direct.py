@@ -1,4 +1,5 @@
 import importlib.util
+import json
 from pathlib import Path
 
 # Load mcp-wrap.py even though it has a hyphen
@@ -25,4 +26,4 @@ res = mod.paas_solve(
     poll_interval_s=0.5,
     include_stdout=False,
 )
-print(res)
+print(json.dumps(res, indent=4))

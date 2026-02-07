@@ -11,12 +11,14 @@ Flask-SQLAlchemy==2.5.1
 Flask-Uploads==0.2.1
 flower==2.0.1
 future==0.18.2
+httpx==0.28.1
 humanize==2.5.0
 idna==2.10
 itsdangerous==1.1.0
 Jinja2==2.11.2
 kombu==5.3.7
 MarkupSafe==1.1.1
+mcp==1.25.0
 mysqlclient==2.1.1
 prometheus-client==0.8.0
 pytz==2020.1
