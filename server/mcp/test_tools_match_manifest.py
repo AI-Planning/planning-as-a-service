@@ -1,5 +1,5 @@
 import json, urllib.request, inspect
-import mcp_wrap2
+import mcp_wrap
 
 base="http://localhost:5001"
 pkgs=json.load(urllib.request.urlopen(base+"/package"))
@@ -9,10 +9,10 @@ for pkg, info in pkgs.items():
     services = info.get("endpoint", {}).get("services", {})
     for svc, man in services.items():
         tool = f"paas_{pkg}_{svc}".replace("-", "_").replace(".", "_")
-        if not hasattr(mcp_wrap2, tool):
+        if not hasattr(mcp_wrap, tool):
             fail.append((pkg, svc, "missing tool"))
             continue
-        fn = getattr(mcp_wrap2, tool)
+        fn = getattr(mcp_wrap, tool)
         sig = inspect.signature(fn)
         tool_params = [p for p in sig.parameters.keys() if p not in ("timeout_s","poll_interval_s")]
         manifest_params = [a["name"] for a in man.get("args", []) if "name" in a]

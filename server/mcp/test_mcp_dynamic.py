@@ -1,12 +1,11 @@
 import asyncio
-import json
 from mcp.client.session import ClientSession
 from mcp.client.stdio import stdio_client, StdioServerParameters
 
 async def main():
     server = StdioServerParameters(
         command="python3",
-        args=["mcp_wrap2.py"],
+        args=["mcp_wrap.py"],
         env=None,
     )
 
