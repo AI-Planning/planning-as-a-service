@@ -1,5 +1,6 @@
 import os
 import time
+import inspect
 from typing import Any, Dict, Optional, List
 
 import httpx
@@ -210,35 +211,70 @@ def _register_paas_tool(
     # Extract arg names for the function signature
     arg_names = [a["name"] for a in args if isinstance(a, dict) and "name" in a]
 
-    # Build function signature based on explicit manifest args
-    params = ", ".join(
-        [*arg_names, "timeout_s=DEFAULT_TIMEOUT_S", "poll_interval_s=DEFAULT_POLL_INTERVAL_S"]
+    # Build inspect.Signature based on manifest
+    params: List[inspect.Parameter] = []
+    
+    # Manifest args: positional or keyword, required
+    for name in arg_names:
+        params.append(
+            inspect.Parameter(
+                name=name, 
+                kind=inspect.Parameter.POSITIONAL_OR_KEYWORD
+            )
+        )
+    
+    # Wrapper controls: keyword only
+    params.append(
+        inspect.Parameter(
+            name="timeout_s",
+            kind=inspect.Parameter.KEYWORD_ONLY,
+            default=DEFAULT_TIMEOUT_S,
+            annotation=float
+        )
+    )
+    params.append(
+        inspect.Parameter(
+            name="poll_interval_s",
+            kind=inspect.Parameter.KEYWORD_ONLY,
+            default=DEFAULT_POLL_INTERVAL_S,
+            annotation=float
+        )
     )
 
-    payload_items = ", ".join([f"'{n}': {n}" for n in arg_names])
+    # Apply signature
+    sig = inspect.Signature(parameters=params, return_annotation=Dict[str, Any])
 
-    # Generate the function source
-    src = f"""
-def {tool_name}({params}):
-    \"\"\"{docstring}\"\"\"
-    payload = {{{payload_items}}}
-    return _submit_and_poll("{package}", "{service}", payload, timeout_s=timeout_s, poll_interval_s=poll_interval_s)
-"""
+    # Define the wrapper
+    def wrapper(*args: Any, **kwargs: Any) -> Dict[str, Any]:
+        # Enforce signature
+        bound = sig.bind(*args, **kwargs)
+        bound.apply_defaults()
+        values = dict(bound.arguments)
 
-    # Create function in an isolated scope using Exec
-    scope: Dict[str, Any] = {
-        "_submit_and_poll": _submit_and_poll,
-        "DEFAULT_TIMEOUT_S": DEFAULT_TIMEOUT_S,
-        "DEFAULT_POLL_INTERVAL_S": DEFAULT_POLL_INTERVAL_S,
-    }
+        # Separate wrapper controls from payload
+        timeout_s = float(values.pop("timeout_s"))
+        poll_interval_s = float(values.pop("poll_interval_s"))
+        
+        # Remaining keys should match manifest args and become the payload
+        payload = values
 
-    exec(src, scope)
-    fn = scope[tool_name]
+        return _submit_and_poll(
+            package=package, 
+            service=service, 
+            payload=payload,
+            timeout_s=timeout_s, 
+            poll_interval_s=poll_interval_s
+        )
 
-    globals()[tool_name] = fn
+    # Make MCP introspection see the dynamic signature and docstring
+    wrapper.__name__ = tool_name
+    wrapper.__signature__ = sig
+    wrapper.__doc__ = docstring
+
+    globals()[tool_name] = wrapper
 
     # Register the function as an MCP tool
-    mcp.tool(name=tool_name)(fn)
+    mcp.tool(name=tool_name)(wrapper)
     print("Registered tool:", tool_name)
 
 def _build_tools_from_manifest() -> None:
