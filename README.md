@@ -24,7 +24,7 @@ Please create a new environment file called .env, and set up the following varia
 * MAX_MEMORY_PER_DOCKER_WORKER=4096M #Max memory each Celery worker/container can consume
 * WORKER_NUMBERS=12 #Number of Celery worker/containers
 * TIME_LIMIT=30 #Time limit per celery task in seconds
-* MCP_POLL_INTERVAL # Frequency of checking port for solved plan
+* MCP_POLL_INTERVAL=0.5 # Frequency of checking port for solved plan
 * MYSQL_USER=user #Metadata DB user
 * MYSQL_PASSWORD=password
 * MYSQL_ROOT_PASSWORD=password
