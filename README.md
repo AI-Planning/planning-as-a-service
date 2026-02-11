@@ -24,11 +24,14 @@ Please create a new environment file called .env, and set up the following varia
 * MAX_MEMORY_PER_DOCKER_WORKER=4096M #Max memory each Celery worker/container can consume
 * WORKER_NUMBERS=12 #Number of Celery worker/containers
 * TIME_LIMIT=30 #Time limit per celery task in seconds
+* MCP_POLL_INTERVAL=0.5 # Frequency of checking port for solved plan
 * MYSQL_USER=user #Metadata DB user
 * MYSQL_PASSWORD=password
 * MYSQL_ROOT_PASSWORD=password
 * CELERY_RESULT_EXPIRE=86400 #Time for when after stored task results will be deleted on Redis
 * FLOWER_MONITOR_MAX_TASKS=10000 # Maximum tasks log that will be kept on Flower
+* FRONTEND_PORT=8001 # Default API port for frontend
+* PAAS_PORT=5001 # API port for server. Must match values in Dockerfiles
 
 3. Start Docker:
 
@@ -107,6 +110,20 @@ source env/bin/activate
 cd celery-queue
 flower -A tasks --port=5555 --broker=redis://localhost:6379/0
 ```
+
+### Testing MCP
+How to run MCP test:
+1. Test dynamic MCP tool creation and server functionality from a temporary MCP client
+- Run docker container from server directory
+- Run `server/mcp/test_mcp_dynamic.py` from the `server/mcp` directory
+    - Tests the performance of MCP methods exposed to MCP Clients
+    - MCP tools are dynamically generated based on the available packages manifest
+
+2. Dynamic tool argument testing
+- Run docker container from server directory
+- Run `server/mcp/test_tools_match_manifest.py` from the `server/mcp` directory
+    - Tests whether dynamically generated MCP tools match the requirements found within the manifest
+
 
 ### Debug
 
