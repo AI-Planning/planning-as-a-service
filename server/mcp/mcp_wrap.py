@@ -188,7 +188,10 @@ def _register_paas_tool(
         name = arg.get("name", "<missing>")
         typ = arg.get("type", "")
         desc = arg.get("description", "")
-        arg_lines.append(f"- {name}: {desc} (type={typ})")
+        default_str = ""
+        if isinstance(arg, dict) and "default" in arg:
+            default_str = f" (default={arg.get('default')})"
+        arg_lines.append(f"- {name}: {desc} (type={typ}){default_str}")
     args_block = "\n".join(arg_lines) if arg_lines else "No arguments documented."
     
     returns = svc_manifest.get("return", {}) or {}
@@ -208,20 +211,31 @@ def _register_paas_tool(
         f"- poll_interval_s: seconds between polls (default {DEFAULT_POLL_INTERVAL_S})\n"
     )
 
-    # Extract arg names for the function signature
-    arg_names = [a["name"] for a in args if isinstance(a, dict) and "name" in a]
-
     # Build inspect.Signature based on manifest
     params: List[inspect.Parameter] = []
     
     # Manifest args: positional or keyword, required
-    for name in arg_names:
-        params.append(
-            inspect.Parameter(
-                name=name, 
-                kind=inspect.Parameter.POSITIONAL_OR_KEYWORD
+    for arg in args:
+        # Skip if not a dict or missing 'name'
+        if not isinstance(arg, dict) or "name" not in arg:
+            continue
+        
+        # Check for arg default value
+        if "default" in arg:
+            params.append(
+                inspect.Parameter(
+                    name=arg["name"], 
+                    kind=inspect.Parameter.POSITIONAL_OR_KEYWORD, 
+                    default=arg["default"]
+                )
             )
-        )
+        else:
+            params.append(
+                inspect.Parameter(
+                    name=arg["name"], 
+                    kind=inspect.Parameter.POSITIONAL_OR_KEYWORD
+                )
+            )
     
     # Wrapper controls: keyword only
     params.append(
