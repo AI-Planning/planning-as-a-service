@@ -23,6 +23,9 @@ RUN planutils install -f -y optic
 # Temporal planning
 RUN planutils install -f -y tfd
 
+# Validation tool
+RUN planutils install -f -y val
+
 RUN mkdir /paas
 COPY requirements.txt /paas/requirements.txt
 
@@ -30,7 +33,10 @@ RUN apt-get update
 RUN apt-get install -y python3-dev default-libmysqlclient-dev build-essential
 
 # install requirements
-RUN python3 -m pip install --upgrade pip setuptools wheel
+
+# DO NOT update to latest setuptools: no longer has pkg_resources module, which is required by flask
+# RUN python3 -m pip install --upgrade pip setuptools wheel
+
 RUN python3 -m pip install -r /paas/requirements.txt
 
 CMD /bin/bash
