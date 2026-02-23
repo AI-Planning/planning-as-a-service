@@ -10,11 +10,6 @@ from mcp.server.fastmcp import FastMCP
 mcp = FastMCP("PaaS-wrap")
 
 # Config (from env)
-# PAAS_BASE_URL = os.getenv("PAAS_BASE_URL", "http://localhost:5001").rstrip("/")
-# DEFAULT_TIMEOUT_S = float(os.getenv("DEFAULT_TIMEOUT_S", "30"))
-# DEFAULT_POLL_INTERVAL_S = float(os.getenv("DEFAULT_POLL_INTERVAL_S", "0.5"))
-# HTTP_TIMEOUT_S = float(os.getenv("HTTP_TIMEOUT_S", "10"))
-
 PAAS_BASE_URL = f"http://localhost:{os.getenv('PAAS_PORT', 5001)}" # default API destination
 DEFAULT_TIMEOUT_S = int(os.getenv("TIME_LIMIT", 30)) # max time wrapper will wait for plan
 DEFAULT_POLL_INTERVAL_S = float(os.getenv("MCP_POLL_INTERVAL", 0.5)) # how often we check the planner

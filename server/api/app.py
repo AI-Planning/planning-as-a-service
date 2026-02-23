@@ -160,8 +160,8 @@ def get_available_package():
         all_packages[package]["package_name"]=package
 
     # Return the manifest of installed package
-    insterested_package={package: all_packages[package] for package in all_packages if package in installed_package if "services" in all_packages[package].get("endpoint", {})}
-    return jsonify(insterested_package)
+    interested_package={package: all_packages[package] for package in all_packages if package in installed_package if "services" in all_packages[package].get("endpoint", {})}
+    return jsonify(interested_package)
 
 
 # Redirects user to documentation for the package
