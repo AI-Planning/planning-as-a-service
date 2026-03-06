@@ -26,6 +26,9 @@ RUN planutils install -f -y tfd
 # Validation tool
 RUN planutils install -f -y val
 
+# PDDL tool (syntax checker)
+RUN planutils install -f -y pddl
+
 RUN mkdir /paas
 COPY requirements.txt /paas/requirements.txt
 
