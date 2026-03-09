@@ -6,13 +6,21 @@ from typing import Any, Dict, Optional, List
 import httpx
 from mcp.server.fastmcp import FastMCP
 
-# MCP server
-mcp = FastMCP("PaaS-wrap")
+# Runtime config (overridden by server/mcp/Dockerfile ENV in container)
+# Keep localhost/stdio defaults for direct local test runs.
+PAAS_HOST = os.getenv("PAAS_HOST", "localhost")
+PAAS_PORT = int(os.getenv("PAAS_PORT", "5001"))
+PAAS_BASE_URL = f"http://{PAAS_HOST}:{PAAS_PORT}"
 
-# Config (from env)
-PAAS_BASE_URL = f"http://localhost:{os.getenv('PAAS_PORT', 5001)}" # default API destination
-DEFAULT_TIMEOUT_S = int(os.getenv("TIME_LIMIT", 30)) # max time wrapper will wait for plan
-DEFAULT_POLL_INTERVAL_S = float(os.getenv("MCP_POLL_INTERVAL", 0.5)) # how often we check the planner
+MCP_HOST = os.getenv("MCP_HOST", "127.0.0.1")
+MCP_PORT = int(os.getenv("MCP_PORT", "8000"))
+MCP_TRANSPORT = os.getenv("MCP_TRANSPORT", "stdio")
+
+DEFAULT_TIMEOUT_S = int(os.getenv("TIME_LIMIT", "30"))
+DEFAULT_POLL_INTERVAL_S = float(os.getenv("MCP_POLL_INTERVAL", "0.5"))
+
+# MCP server
+mcp = FastMCP("PaaS-wrap", host=MCP_HOST, port=MCP_PORT)
 
 
 # API helper functions
@@ -20,7 +28,7 @@ def _complete_check_url(job_tag: str) -> str:
     """
     Adds base url to the job tag returned by PaaS
     job tag format: /check/...
-    output format: http://localhost:5001/check/...
+    output format: http://<PAAS_HOST>:<PAAS_PORT>/check/...
     """
     if job_tag.startswith(PAAS_BASE_URL):
         return job_tag
@@ -334,4 +342,4 @@ _build_tools_from_manifest()
 print("Dynamic tools registered.")
 
 if __name__ == "__main__":
-    mcp.run()
+    mcp.run(transport=MCP_TRANSPORT)

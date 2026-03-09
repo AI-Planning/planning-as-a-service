@@ -22,6 +22,16 @@ services:
     # volumes:
     #   - /etc/letsencrypt:/etc/letsencrypt
 
+  mcp:
+    build:
+      context: ./mcp
+      dockerfile: Dockerfile
+    restart: always
+    ports:
+      - "8000:8000"
+    depends_on:
+      - web
+
   worker:
     privileged: true
     build:
