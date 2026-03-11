@@ -13,7 +13,7 @@ PAAS_PORT = int(os.getenv("PAAS_PORT", "5001"))
 PAAS_BASE_URL = f"http://{PAAS_HOST}:{PAAS_PORT}"
 
 MCP_HOST = os.getenv("MCP_HOST", "127.0.0.1")
-MCP_PORT = int(os.getenv("MCP_PORT", "8000"))
+MCP_PORT = int(os.getenv("MCP_PORT", "5002"))
 MCP_TRANSPORT = os.getenv("MCP_TRANSPORT", "stdio")
 
 DEFAULT_TIMEOUT_S = int(os.getenv("TIME_LIMIT", "30"))
