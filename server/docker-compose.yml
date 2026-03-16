@@ -9,6 +9,7 @@ services:
     # Uncomment below if you need to run it with SSL certificate, and edit frontend/Dockerfile nginx command
     # volumes:
     #   - /etc/letsencrypt:/etc/letsencrypt
+
   web:
     build:
       context: ./api
@@ -19,6 +20,19 @@ services:
     depends_on:
       - redis
     # Uncomment below if you need to run it with SSL certificate, and edit api/Dockerfile gunicorn command
+    # volumes:
+    #   - /etc/letsencrypt:/etc/letsencrypt
+
+  mcp:
+    build:
+      context: ./mcp
+      dockerfile: Dockerfile
+    restart: always
+    ports:
+      - "${MCP_PORT:-5002}:5002"
+    depends_on:
+      - web
+    # Uncomment below if you need to run it with SSL certificate
     # volumes:
     #   - /etc/letsencrypt:/etc/letsencrypt
 
