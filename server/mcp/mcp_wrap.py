@@ -10,7 +10,8 @@ from mcp.server.fastmcp import FastMCP
 # Keep localhost/stdio defaults for direct local test runs.
 PAAS_HOST = os.getenv("PAAS_HOST", "localhost")
 PAAS_PORT = int(os.getenv("PAAS_PORT", "5001"))
-PAAS_BASE_URL = f"http://{PAAS_HOST}:{PAAS_PORT}"
+PAAS_SCHEME = os.getenv("PAAS_SCHEME", "http")
+PAAS_BASE_URL = f"{PAAS_SCHEME}://{PAAS_HOST}:{PAAS_PORT}"
 
 MCP_HOST = os.getenv("MCP_HOST", "127.0.0.1")
 MCP_PORT = int(os.getenv("MCP_PORT", "5002"))
