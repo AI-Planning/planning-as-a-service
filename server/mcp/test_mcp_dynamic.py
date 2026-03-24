@@ -28,7 +28,7 @@ def print_tool_json(result):
 
 async def main():
     transport = os.getenv("MCP_TEST_TRANSPORT", "stdio").strip().lower()
-    remote_url = os.getenv("MCP_TEST_URL", "https://solver.planning.domains:5002/mcp").strip()
+    remote_url = os.getenv("MCP_TEST_URL", "https://solver.planning.domains/mcp").strip()
 
     if transport == "stdio":
         server = StdioServerParameters(

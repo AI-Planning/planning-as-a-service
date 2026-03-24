@@ -7,7 +7,7 @@ ENV MCP_TRANSPORT streamable-http
 ENV PAAS_HOST web
 ENV PAAS_PORT 5001
 # Change to https if the API is served over HTTPS in deployment.
-ENV PAAS_SCHEME http
+ENV PAAS_SCHEME https
 
 COPY . /mcp
 WORKDIR /mcp
