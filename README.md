@@ -113,13 +113,39 @@ flower -A tasks --port=5555 --broker=redis://localhost:6379/0
 
 ### Testing MCP
 How to run MCP test:
-1. Test dynamic MCP tool creation and server functionality from a temporary MCP client
-- Run docker container from server directory
+1. Test a local/self-hosted MCP server from a temporary MCP client
+- Run docker containers from the `server` directory
 - Run `server/mcp/test_mcp_dynamic.py` from the `server/mcp` directory
-    - Tests the performance of MCP methods exposed to MCP Clients
+    - By default this uses the local `stdio` MCP transport
+    - This tests the performance of MCP methods exposed to MCP clients
     - MCP tools are dynamically generated based on the available packages manifest
 
-2. Dynamic tool argument testing
+- Call test file through shell:
+```bash
+cd server/mcp
+MCP_TEST_TRANSPORT=stdio \
+python3 test_mcp_dynamic.py
+```
+
+2. Test the hosted remote MCP server
+- Run `server/mcp/test_mcp_dynamic.py` from the `server/mcp` directory
+    - Use `streamable-http` as MCP transport to test remote MCP server
+    - This tests the health and performance of the remote MCP server
+
+- Call test file through shell:
+```bash
+cd server/mcp
+MCP_TEST_TRANSPORT=streamable-http \
+python3 test_mcp_dynamic.py
+```
+
+- The remote endpoint should also respond to a simple protocol check such as:
+
+```bash
+curl -v https://solver.planning.domains/mcp
+```
+
+3. Dynamic tool argument testing
 - Run docker container from server directory
 - Run `server/mcp/test_tools_match_manifest.py` from the `server/mcp` directory
     - Tests whether dynamically generated MCP tools match the requirements found within the manifest

@@ -39,7 +39,7 @@ def _http_client() -> httpx.Client:
     """
     Create client to make requests to PaaS
     """
-    return httpx.Client(timeout=DEFAULT_TIMEOUT_S)
+    return httpx.Client(timeout=DEFAULT_TIMEOUT_S, verify=False)
 
 
 # Core PaaS helper - generic API submit-and-poll function

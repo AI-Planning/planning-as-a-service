@@ -6,6 +6,8 @@ ENV MCP_TRANSPORT streamable-http
 
 ENV PAAS_HOST web
 ENV PAAS_PORT 5001
+
+# Local/self-hosted Docker setup uses plain HTTP between containers.
 # Change to https if the API is served over HTTPS in deployment.
 ENV PAAS_SCHEME http
 
