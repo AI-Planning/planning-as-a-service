@@ -213,6 +213,12 @@ def check_task(task_id: str) -> str:
         return {"status":res.state}
     elif res.state == 'PROGRESS':
         return {"status":"PROGRESS", "partial_result":res.info}
+    elif res.state == states.REVOKED:
+        # Cancelled before a worker ever picked it up (e.g. still queued
+        # under load) - tasks.run.package's own SIGTERM handler covers
+        # cancelling an already-running task, this covers the rest.
+        cancelled_result = {"stdout":"", "stderr":"Cancelled by client", "call":"", "output":{}, "output_type":"log"}
+        return {"result":cancelled_result, "status":"ok"}
     else:
         #Get requst
 
@@ -233,6 +239,16 @@ def check_task(task_id: str) -> str:
             else:
                 # Return the default result format
                 return {"result":result,"status":"ok"}
+
+
+@app.route('/cancel/<string:task_id>', methods=['POST'])
+def cancel_task(task_id: str) -> str:
+    # terminate=True + SIGTERM asks the worker to interrupt this specific
+    # task; tasks.run.package installs its own SIGTERM handler to kill the
+    # planner's whole process group, not just revoke the Celery task bookkeeping.
+    celery.control.revoke(task_id, terminate=True, signal='SIGTERM')
+    return {"status": "cancelled"}
+
 
 # Returns all necessary arguments for a service in a package
 def get_arguments(request_data, package_manifest):

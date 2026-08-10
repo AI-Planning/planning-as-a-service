@@ -1,5 +1,6 @@
 import os
 import shutil
+import signal
 import time
 import tempfile
 import requests
@@ -137,27 +138,54 @@ def run_package(self, package: str, arguments:dict, call:str, output_file:dict, 
         call = f'{planner} -- {args}'
         call = f"timeout {time_limit} planutils run {call}"
         
+        # start_new_session=True makes this process (the shell running `call`)
+        # its own process group leader. Its children (timeout, planutils, the
+        # actual planner) inherit that same group by default, so killing the
+        # whole group later (on cancellation) reliably takes all of them down
+        # - killing just proc.pid would only kill the shell and orphan the
+        # planner still running underneath it.
         proc = subprocess.Popen(call, stdout=subprocess.PIPE, stderr=subprocess.PIPE,
                             executable='/bin/bash', encoding='utf-8',
-                            shell=True, cwd=tmpfolder)
+                            shell=True, cwd=tmpfolder, start_new_session=True)
 
-        # Some packages (e.g. optic) redirect their real output to a file via
-        # `>> plan` inside `call`, rather than writing to the process's own
-        # stdout - so tail that file on disk to observe progress while the
-        # process is still running, using the same glob descriptor that's
-        # used to retrieve the final output below.
-        output_pattern = os.path.join(tmpfolder, output_file["files"])
-        last_reported_len = 0
-        while proc.poll() is None:
-            time.sleep(0.5)
-            matches = glob.glob(output_pattern)
-            if not matches:
-                continue
-            with open(matches[0], 'r') as f:
-                content = f.read()
-            if len(content) > last_reported_len and '; Plan found with metric' in content[last_reported_len:]:
-                self.update_state(state='PROGRESS', meta={'call': call, 'partial_stdout': content})
-            last_reported_len = len(content)
+        cancelled = {'value': False}
+
+        def handle_cancel(signum, frame):
+            # Celery delivers this when the task is revoked with terminate=True.
+            # Kill the whole process group (not just proc.pid) so nothing is
+            # left running orphaned, then let the task end.
+            cancelled['value'] = True
+            try:
+                os.killpg(os.getpgid(proc.pid), signal.SIGKILL)
+            except ProcessLookupError:
+                pass
+
+        previous_handler = signal.signal(signal.SIGTERM, handle_cancel)
+
+        try:
+            # Some packages (e.g. optic) redirect their real output to a file via
+            # `>> plan` inside `call`, rather than writing to the process's own
+            # stdout - so tail that file on disk to observe progress while the
+            # process is still running, using the same glob descriptor that's
+            # used to retrieve the final output below.
+            output_pattern = os.path.join(tmpfolder, output_file["files"])
+            last_reported_len = 0
+            while proc.poll() is None:
+                time.sleep(0.5)
+                matches = glob.glob(output_pattern)
+                if not matches:
+                    continue
+                with open(matches[0], 'r') as f:
+                    content = f.read()
+                if len(content) > last_reported_len and '; Plan found with metric' in content[last_reported_len:]:
+                    self.update_state(state='PROGRESS', meta={'call': call, 'partial_stdout': content})
+                last_reported_len = len(content)
+        finally:
+            signal.signal(signal.SIGTERM, previous_handler)
+
+        if cancelled['value']:
+            shutil.rmtree(tmpfolder, ignore_errors=True)
+            return {"stdout":"", "stderr":"Cancelled by client", "call":call, "output":{},"output_type":output_file["type"]},arguments
 
         res = SimpleNamespace(stdout=proc.stdout.read(), stderr=proc.stderr.read())
 
