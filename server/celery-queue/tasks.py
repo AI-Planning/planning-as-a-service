@@ -141,14 +141,25 @@ def run_package(self, package: str, arguments:dict, call:str, output_file:dict, 
                             executable='/bin/bash', encoding='utf-8',
                             shell=True, cwd=tmpfolder)
 
-        stdout_so_far = ""
-        for line in iter(proc.stdout.readline, ''):
-            stdout_so_far += line
-            if line.strip().startswith('; Plan found with metric'):
-                self.update_state(state='PROGRESS', meta={'call': call, 'partial_stdout': stdout_so_far})
+        # Some packages (e.g. optic) redirect their real output to a file via
+        # `>> plan` inside `call`, rather than writing to the process's own
+        # stdout - so tail that file on disk to observe progress while the
+        # process is still running, using the same glob descriptor that's
+        # used to retrieve the final output below.
+        output_pattern = os.path.join(tmpfolder, output_file["files"])
+        last_reported_len = 0
+        while proc.poll() is None:
+            time.sleep(0.5)
+            matches = glob.glob(output_pattern)
+            if not matches:
+                continue
+            with open(matches[0], 'r') as f:
+                content = f.read()
+            if len(content) > last_reported_len and '; Plan found with metric' in content[last_reported_len:]:
+                self.update_state(state='PROGRESS', meta={'call': call, 'partial_stdout': content})
+            last_reported_len = len(content)
 
-        proc.wait()
-        res = SimpleNamespace(stdout=stdout_so_far, stderr=proc.stderr.read())
+        res = SimpleNamespace(stdout=proc.stdout.read(), stderr=proc.stderr.read())
 
         output = retrieve_output_file(output_file, tmpfolder)
         # Remove the files in temfolder when task is finished
