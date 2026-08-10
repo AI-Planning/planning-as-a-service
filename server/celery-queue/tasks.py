@@ -7,6 +7,7 @@ import subprocess
 import json
 import glob
 import time
+from types import SimpleNamespace
 from db import MetaDB
 from functools import wraps
 
@@ -112,8 +113,9 @@ def write_to_temp_file(name:str, data:str, folder:str):
 
 @celery.task(name='tasks.run.package',soft_time_limit=TIME_LIMIT+10,bind=True)
 @track_celery
-def run_package(self, package: str, arguments:dict, call:str, output_file:dict,**kwargs):
+def run_package(self, package: str, arguments:dict, call:str, output_file:dict, max_time=None, **kwargs):
 
+    time_limit = int(max_time) if max_time else TIME_LIMIT
 
     try:
         tmpfolder = tempfile.mkdtemp()
@@ -133,11 +135,20 @@ def run_package(self, package: str, arguments:dict, call:str, output_file:dict,*
         planner = call.split(' ')[0]
         args = ' '.join(call.split(' ')[1:])
         call = f'{planner} -- {args}'
-        call = f"timeout {TIME_LIMIT} planutils run {call}"
+        call = f"timeout {time_limit} planutils run {call}"
         
-        res = subprocess.run(call, stdout=subprocess.PIPE, stderr=subprocess.PIPE,
+        proc = subprocess.Popen(call, stdout=subprocess.PIPE, stderr=subprocess.PIPE,
                             executable='/bin/bash', encoding='utf-8',
                             shell=True, cwd=tmpfolder)
+
+        stdout_so_far = ""
+        for line in iter(proc.stdout.readline, ''):
+            stdout_so_far += line
+            if line.strip().startswith('; Plan found with metric'):
+                self.update_state(state='PROGRESS', meta={'call': call, 'partial_stdout': stdout_so_far})
+
+        proc.wait()
+        res = SimpleNamespace(stdout=stdout_so_far, stderr=proc.stderr.read())
 
         output = retrieve_output_file(output_file, tmpfolder)
         # Remove the files in temfolder when task is finished
