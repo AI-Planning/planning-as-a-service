@@ -163,23 +163,43 @@ def run_package(self, package: str, arguments:dict, call:str, output_file:dict, 
         previous_handler = signal.signal(signal.SIGTERM, handle_cancel)
 
         try:
-            # Some packages (e.g. optic) redirect their real output to a file via
-            # `>> plan` inside `call`, rather than writing to the process's own
-            # stdout - so tail that file on disk to observe progress while the
-            # process is still running, using the same glob descriptor that's
-            # used to retrieve the final output below.
+            # Some packages (e.g. optic) redirect their real output to a file
+            # via `>> plan` inside `call` - a template that comes from that
+            # package's own manifest in planutils (e.g. optic's is literally
+            # "optic {domain} {problem} >> plan"), not something in this repo
+            # - rather than writing to the process's own stdout. So tail that
+            # file on disk to observe progress while the process is still
+            # running, using the same glob descriptor that's used to retrieve
+            # the final output below.
+            #
+            # Read incrementally (seek to where the last read left off)
+            # rather than re-reading the whole file every poll: a full re-read
+            # each cycle means total bytes read over a run's lifetime grows
+            # with run-length x poll-frequency x current-file-size, which
+            # matters once a search runs long/produces a large log. The
+            # accumulated content (not just each new chunk) is still what
+            # gets published, since the client parses the full text for the
+            # last solution block found so far.
             output_pattern = os.path.join(tmpfolder, output_file["files"])
-            last_reported_len = 0
+            matched_file = None
+            file_pos = 0
+            accumulated_content = ""
             while proc.poll() is None:
-                time.sleep(0.5)
-                matches = glob.glob(output_pattern)
-                if not matches:
+                time.sleep(0.2)
+                if matched_file is None:
+                    matches = glob.glob(output_pattern)
+                    if not matches:
+                        continue
+                    matched_file = matches[0]
+                with open(matched_file, 'r') as f:
+                    f.seek(file_pos)
+                    new_content = f.read()
+                    file_pos = f.tell()
+                if not new_content:
                     continue
-                with open(matches[0], 'r') as f:
-                    content = f.read()
-                if len(content) > last_reported_len and '; Plan found with metric' in content[last_reported_len:]:
-                    self.update_state(state='PROGRESS', meta={'call': call, 'partial_stdout': content})
-                last_reported_len = len(content)
+                accumulated_content += new_content
+                if '; Plan found with metric' in new_content:
+                    self.update_state(state='PROGRESS', meta={'call': call, 'partial_stdout': accumulated_content})
         finally:
             signal.signal(signal.SIGTERM, previous_handler)
 
