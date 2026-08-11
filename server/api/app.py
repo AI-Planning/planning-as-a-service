@@ -46,6 +46,10 @@ app.secret_key = app.config['SECRET_KEY']
 block_dict={}
 LIMITER_SECONDS= app.config['LIMITER_SECONDS']
 
+# Upper bound on the per-request "max_time" override (seconds), so a client
+# can't tie up a worker indefinitely.
+MAX_ALLOWED_TIME = int(os.environ.get('MAX_ALLOWED_TIME', 120))
+
 # Flask-Upload
 PDDL = ('pddl',)
 pddl_files = UploadSet('pddl', PDDL, default_dest=lambda x: app.config['UPLOAD_FOLDER'])
@@ -142,8 +146,20 @@ def runPackage(package, service):
 
         call = package_manifest['call']
         output_file = package_manifest['return']
+
+        # Optional per-request override of the planner time budget, clamped to
+        # avoid a client hogging a worker indefinitely.
+        max_time = None
+        if request_data and request_data.get('max_time') is not None:
+            try:
+                max_time = min(max(int(request_data['max_time']), 1), MAX_ALLOWED_TIME)
+            except (TypeError, ValueError):
+                return jsonify({"Error": "max_time must be an integer number of seconds"})
+
         # Send task
-        task = celery.send_task('tasks.run.package', args=[package, arguments, call, output_file], kwargs={"persistent":persistent_value})
+        task_kwargs = {"persistent":persistent_value, "max_time":max_time}
+        send_kwargs = {"soft_time_limit": max_time + 10} if max_time else {}
+        task = celery.send_task('tasks.run.package', args=[package, arguments, call, output_file], kwargs=task_kwargs, **send_kwargs)
 
         # keep the IP and datetime of the tasks
         block_dict[request.remote_addr]=datetime.now()
@@ -195,6 +211,14 @@ def check_task(task_id: str) -> str:
     res = celery.AsyncResult(task_id)
     if res.state == states.PENDING:
         return {"status":res.state}
+    elif res.state == 'PROGRESS':
+        return {"status":"PROGRESS", "partial_result":res.info}
+    elif res.state == states.REVOKED:
+        # Cancelled before a worker ever picked it up (e.g. still queued
+        # under load) - tasks.run.package's own SIGTERM handler covers
+        # cancelling an already-running task, this covers the rest.
+        cancelled_result = {"stdout":"", "stderr":"Cancelled by client", "call":"", "output":{}, "output_type":"log"}
+        return {"result":cancelled_result, "status":"ok"}
     else:
         #Get requst
 
@@ -215,6 +239,16 @@ def check_task(task_id: str) -> str:
             else:
                 # Return the default result format
                 return {"result":result,"status":"ok"}
+
+
+@app.route('/cancel/<string:task_id>', methods=['POST'])
+def cancel_task(task_id: str) -> str:
+    # terminate=True + SIGTERM asks the worker to interrupt this specific
+    # task; tasks.run.package installs its own SIGTERM handler to kill the
+    # planner's whole process group, not just revoke the Celery task bookkeeping.
+    celery.control.revoke(task_id, terminate=True, signal='SIGTERM')
+    return {"status": "cancelled"}
+
 
 # Returns all necessary arguments for a service in a package
 def get_arguments(request_data, package_manifest):
